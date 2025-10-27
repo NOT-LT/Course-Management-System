@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Resources - Admin Portal | ITCS333</title>
+    <link rel="stylesheet" href="../src/common/output.css">
+    <script>
+        // Dark mode toggle
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme',
+                document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+            );
+        }
+
+        // Load saved theme
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Demo functions
+        function deleteResource(title) {
+            if (confirm(`Are you sure you want to delete "${title}"?`)) {
+                alert(`Resource "${title}" has been deleted.`);
+            }
+        }
+
+        function editResource(title) {
+            alert(`Edit form for "${title}" would appear here.`);
+        }
+
+        function previewResource(title) {
+            alert(`Preview of "${title}" would open here.`);
+        }
+    </script>
+</head>
+
+<body class="min-h-screen bg-background">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-card border-b border-border shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo & Title -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-primary-foreground" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-foreground">ITCS333 Course Portal</h1>
+                        <p class="text-xs text-muted-foreground">Resources Management</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center gap-6">
+                    <a href="#" class="text-sm font-medium text-foreground hover:text-primary">Dashboard</a>
+                    <a href="#" class="text-sm font-medium text-foreground hover:text-primary">Users</a>
+                    <a href="#" class="text-sm font-medium text-primary">Resources</a>
+                    <a href="#" class="text-sm font-medium text-foreground hover:text-primary">Assignments</a>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-muted transition-colors"
+                        title="Toggle theme">
+                        <svg class="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                            </path>
+                        </svg>
+                    </button>
+                    <div class="flex items-center gap-2 pl-3 border-l border-border">
+                        <div class="w-9 h-9 bg-accent rounded-full flex items-center justify-center">
+                            <span class="text-sm font-semibold text-accent-foreground">AD</span>
+                        </div>
+                        <div class="hidden sm:block">
+                            <p class="text-sm font-medium text-foreground">Admin User</p>
+                            <p class="text-xs text-muted-foreground">admin@uob.edu.bh</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-foreground mb-2">Course Resources</h2>
+                    <p class="text-muted-foreground">Manage learning materials, documents, and external links</p>
+                </div>
+                <button onclick="openModal('addResourceModal')"
+                    class="btn btn-primary flex items-center gap-2 px-6 py-3 text-base">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Add New Resource
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Resources -->
+            <div class="card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <span class="badge badge-primary">+8</span>
+                </div>
+                <h3 class="text-2xl font-bold text-foreground mb-1">42</h3>
+                <p class="text-sm text-muted-foreground">Total Resources</p>
+            </div>
+
+            <!-- Documents -->
+            <div class="card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <span class="badge badge-secondary">PDF</span>
+                </div>
+                <h3 class="text-2xl font-bold text-foreground mb-1">28</h3>
+                <p class="text-sm text-muted-foreground">Documents</p>
+            </div>
+
+            <!-- Links -->
+            <div class="card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-info/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+                            </path>
+                        </svg>
+                    </div>
+                    <span class="badge badge-info">Web</span>
+                </div>
+                <h3 class="text-2xl font-bold text-foreground mb-1">12</h3>
+                <p class="text-sm text-muted-foreground">External Links</p>
+            </div>
+
+            <!-- Videos -->
+            <div class="card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <span class="badge badge-accent">Media</span>
+                </div>
+                <h3 class="text-2xl font-bold text-foreground mb-1">2</h3>
+                <p class="text-sm text-muted-foreground">Video Resources</p>
+            </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="card p-6 mb-6">
+            <div class="flex flex-col md:flex-row gap-4">
+                <!-- Search -->
+                <div class="flex-1">
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" placeholder="Search resources by title or description..."
+                            class="input pl-10">
+                    </div>
+                </div>
+
+                <!-- Type Filter -->
+                <select class="input md:w-48">
+                    <option>All Types</option>
+                    <option>PDF Document</option>
+                    <option>External Link</option>
+                    <option>Video</option>
+                    <option>Book Chapter</option>
+                </select>
+
+                <!-- Category Filter -->
+                <select class="input md:w-48">
+                    <option>All Categories</option>
+                    <option>Lecture Notes</option>
+                    <option>Tutorials</option>
+                    <option>References</option>
+                    <option>Exercises</option>
+                </select>
+
+                <!-- Sort -->
+                <select class="input md:w-48">
+                    <option>Newest First</option>
+                    <option>Oldest First</option>
+                    <option>Most Viewed</option>
+                    <option>Alphabetical</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Resources Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+
+            <!-- Resource Card 1 - PDF -->
+            <div class="card overflow-hidden hover:shadow-lg transition-shadow">
+                <div
+                    class="h-48 bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center border-b border-border">
+                    <svg class="w-20 h-20 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-foreground mb-1">HTML5 Fundamentals Guide</h3>
+                            <p class="text-xs text-muted-foreground">Lecture Notes • Week 1</p>
+                        </div>
+                        <span class="badge badge-primary">PDF</span>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        Comprehensive guide covering HTML5 structure, semantic elements, and best practices for modern
+                        web development.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-muted-foreground mb-4">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                            234 views
+                        </span>
+                        <span>Added 3 days ago</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="previewResource('HTML5 Fundamentals Guide')"
+                            class="btn btn-secondary flex-1 text-sm py-2">
+                            Preview
+                        </button>
+                        <button onclick="editResource('HTML5 Fundamentals Guide')" class="btn btn-outline p-2"
+                            title="Edit">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
+                        </button>
+                        <button onclick="deleteResource('HTML5 Fundamentals Guide')"
+                            class="btn btn-outline p-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+                            title="Delete">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Card 2 - Link -->
+            <div class="card overflow-hidden hover:shadow-lg transition-shadow">
+                <div
+                    class="h-48 bg-linear-to-br from-info/20 to-info/5 flex items-center justify-center border-b border-border">
+                    <svg class="w-20 h-20 text-info/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+                        </path>
+                    </svg>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-foreground mb-1">MDN Web Docs - CSS Guide</h3>
+                            <p class="text-xs text-muted-foreground">External Link • Reference</p>
+                        </div>
+                        <span class="badge badge-info">Link</span>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        Official Mozilla documentation for CSS, including tutorials, references, and examples.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-muted-foreground mb-4">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                            156 views
+                        </span>
+                        <span>Added 1 week ago</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="previewResource('MDN Web Docs - CSS Guide')"
+                            class="btn btn-secondary flex-1 text-sm py-2">
+                            Open Link
+                        </button>
+                        <button onclick="editResource('MDN Web Docs - CSS Guide')" class="btn btn-outline p-2"
+                            title="Edit">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
+                        </button>
+                        <button onclick="deleteResource('MDN Web Docs - CSS Guide')"
+                            class="btn btn-outline p-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+                            title="Delete">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Card 3 - Video -->
+            <div class="card overflow-hidden hover:shadow-lg transition-shadow">
+                <div
+                    class="h-48 bg-linear-to-br from-accent/20 to-accent/5 flex items-center justify-center border-b border-border relative">
+                    <svg class="w-20 h-20 text-accent/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    <div
+                        class="absolute top-3 right-3 bg-foreground/80 text-background px-2 py-1 rounded text-xs font-medium">
+                        12:45
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-foreground mb-1">JavaScript Async/Await Tutorial</h3>
+                            <p class="text-xs text-muted-foreground">Video • Week 5</p>
+                        </div>
+                        <span class="badge badge-accent">Video</span>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        Learn how to work with asynchronous JavaScript using modern async/await syntax.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-muted-foreground mb-4">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                            89 views
+                        </span>
+                        <span>Added 2 days ago</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="previewResource('JavaScript Async/Await Tutorial')"
+                            class="btn btn-secondary flex-1 text-sm py-2">
+                            Watch Now
+                        </button>
+                        <button onclick="editResource('JavaScript Async/Await Tutorial')" class="btn btn-outline p-2"
+                            title="Edit">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
+                        </button>
+                        <button onclick="deleteResource('JavaScript Async/Await Tutorial')"
+                            class="btn btn-outline p-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+                            title="Delete">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Card 4 - Book Chapter -->
+            <div class="card overflow-hidden hover:shadow-lg transition-shadow">
+                <div
+                    class="h-48 bg-linear-to-br from-secondary/20 to-secondary/5 flex items-center justify-center border-b border-border">
+                    <svg class="w-20 h-20 text-secondary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                        </path>
+                    </svg>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-foreground mb-1">Database Design Principles</h3>
+                            <p class="text-xs text-muted-foreground">Book Chapter • Week 8</p>
+                        </div>
+                        <span class="badge badge-secondary">Chapter</span>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        Chapter 3 from "Database Systems" covering normalization, ER diagrams, and relational design.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-muted-foreground mb-4">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                            67 views
+                        </span>
+                        <span>Added 5 days ago</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="previewResource('Database Design Principles')"
+                            class="btn btn-secondary flex-1 text-sm py-2">
+                            Read
+                        </button>
+                        <button onclick="editResource('Database Design Principles')" class="btn btn-outline p-2"
+                            title="Edit">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
+                        </button>
+                        <button onclick="deleteResource('Database Design Principles')"
+                            class="btn btn-outline p-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+                            title="Delete">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Card 5 - Tutorial -->
+            <div class="card overflow-hidden hover:shadow-lg transition-shadow">
+                <div
+                    class="h-48 bg-linear-to-br from-success/20 to-success/5 flex items-center justify-center border-b border-border">
+                    <svg class="w-20 h-20 text-success/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-foreground mb-1">Git & GitHub Workflow</h3>
+                            <p class="text-xs text-muted-foreground">Tutorial • Tools</p>
+                        </div>
+                        <span class="badge badge-success">Tutorial</span>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        Step-by-step guide for version control, branching, merging, and collaborative development.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-muted-foreground mb-4">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                            142 views
+                        </span>
+                        <span>Added 1 week ago</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="previewResource('Git & GitHub Workflow')"
+                            class="btn btn-secondary flex-1 text-sm py-2">
+                            Start Tutorial
+                        </button>
+                        <button onclick="editResource('Git & GitHub Workflow')" class="btn btn-outline p-2"
+                            title="Edit">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
+                        </button>
+                        <button onclick="deleteResource('Git & GitHub Workflow')"
+                            class="btn btn-outline p-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+                            title="Delete">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Card 6 - Exercises -->
+            <div class="card overflow-hidden hover:shadow-lg transition-shadow">
+                <div
+                    class="h-48 bg-linear-to-br from-warning/20 to-warning/5 flex items-center justify-center border-b border-border">
+                    <svg class="w-20 h-20 text-warning/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
+                        </path>
+                    </svg>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-foreground mb-1">CSS Flexbox Practice Problems</h3>
+                            <p class="text-xs text-muted-foreground">Exercises • Week 3</p>
+                        </div>
+                        <span class="badge badge-warning">Exercises</span>
+                    </div>
+                    <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        10 hands-on exercises to master CSS Flexbox layout with solutions and interactive demos.
+                    </p>
+                    <div class="flex items-center justify-between text-xs text-muted-foreground mb-4">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                            198 views
+                        </span>
+                        <span>Added 4 days ago</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="previewResource('CSS Flexbox Practice Problems')"
+                            class="btn btn-secondary flex-1 text-sm py-2">
+                            Practice
+                        </button>
+                        <button onclick="editResource('CSS Flexbox Practice Problems')" class="btn btn-outline p-2"
+                            title="Edit">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
+                        </button>
+                        <button onclick="deleteResource('CSS Flexbox Practice Problems')"
+                            class="btn btn-outline p-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive"
+                            title="Delete">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Pagination -->
+        <div class="card px-6 py-4">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-sm text-muted-foreground">
+                    Showing <span class="font-medium text-foreground">1</span> to
+                    <span class="font-medium text-foreground">6</span> of
+                    <span class="font-medium text-foreground">42</span> resources
+                </p>
+                <div class="flex items-center gap-2">
+                    <button
+                        class="px-3 py-2 border border-border rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
+                        Previous
+                    </button>
+                    <button
+                        class="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium">1</button>
+                    <button
+                        class="px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors">2</button>
+                    <button
+                        class="px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors">3</button>
+                    <button
+                        class="px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Add Resource Modal -->
+    <div id="addResourceModal" style="display: none;"
+        class="fixed inset-0 bg-foreground/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-border">
+                <h3 class="text-xl font-bold text-foreground">Add New Resource</h3>
+                <button onclick="closeModal('addResourceModal')"
+                    class="p-2 hover:bg-muted rounded-lg transition-colors">
+                    <svg class="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <form class="p-6 space-y-6">
+                <!-- Resource Title -->
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-2">Resource Title *</label>
+                    <input type="text" class="input" placeholder="Enter resource title" required>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Resource Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Type *</label>
+                        <select class="input" required>
+                            <option value="">Select type</option>
+                            <option value="pdf">PDF Document</option>
+                            <option value="link">External Link</option>
+                            <option value="video">Video</option>
+                            <option value="chapter">Book Chapter</option>
+                            <option value="tutorial">Tutorial</option>
+                            <option value="exercise">Exercises</option>
+                        </select>
+                    </div>
+
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Category *</label>
+                        <select class="input" required>
+                            <option value="">Select category</option>
+                            <option value="lecture">Lecture Notes</option>
+                            <option value="tutorial">Tutorials</option>
+                            <option value="reference">References</option>
+                            <option value="exercise">Exercises</option>
+                            <option value="tools">Tools</option>
+                        </select>
+                    </div>
+
+                    <!-- Week -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Week</label>
+                        <select class="input">
+                            <option value="">None</option>
+                            <option value="1">Week 1</option>
+                            <option value="2">Week 2</option>
+                            <option value="3">Week 3</option>
+                            <option value="4">Week 4</option>
+                            <option value="5">Week 5</option>
+                            <option value="6">Week 6</option>
+                            <option value="7">Week 7</option>
+                            <option value="8">Week 8</option>
+                        </select>
+                    </div>
+
+                    <!-- File/Link -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">File or URL *</label>
+                        <input type="text" class="input" placeholder="Upload file or paste URL" required>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-2">Description *</label>
+                    <textarea rows="4" class="input resize-none" placeholder="Describe what this resource covers..."
+                        required></textarea>
+                </div>
+
+                <!-- Tags -->
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-2">Tags (comma separated)</label>
+                    <input type="text" class="input" placeholder="html, css, javascript, tutorial">
+                    <p class="text-xs text-muted-foreground mt-1">Add tags to help students find this resource</p>
+                </div>
+
+                <!-- Visibility -->
+                <div class="flex items-center gap-3 p-4 bg-muted rounded-lg">
+                    <input type="checkbox" id="visible" class="rounded border-border" checked>
+                    <div>
+                        <label for="visible" class="text-sm font-medium text-foreground cursor-pointer">Make visible to
+                            students</label>
+                        <p class="text-xs text-muted-foreground">Uncheck to save as draft</p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-border">
+                    <button type="button" onclick="closeModal('addResourceModal')" class="btn btn-outline">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Add Resource
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>
