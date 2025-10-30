@@ -318,7 +318,7 @@
     }
 
     table {
-        @apply w-full border-collapse bg-card rounded-xl overflow-hidden shadow-lg mb-8 border border-border;
+        @apply w-full border-collapse rounded-lg overflow-hidden mb-8;
         min-width: 600px;
         /* Minimum width for readability */
     }
@@ -381,7 +381,7 @@
 
     /* Modern HR */
     hr {
-        @apply border-0 h-px bg-gradient-to-r from-transparent via-border to-transparent my-8;
+        @apply border-0 h-px bg-linear-to-r from-transparent via-border to-transparent my-8;
     }
 
     /* Enhanced Focus States */
