@@ -33,15 +33,15 @@ Before you begin, ensure you have **Node.js** installed on your machine:
 npm i
 ```
 
-#### **2. Start the Tailwind CSS Compiler**
+#### **2. Start Vite for Hot-reaload**
 
 **⚠️ IMPORTANT:** Always run this command in a separate terminal before starting development and do not close it:
 
 ```bash
-npm run css
+npm run dev
 ```
 
-This watches your HTML files and compiles Tailwind CSS automatically. **Keep this running in your terminal while developing.**
+This watches your files for any change adn reload the website for faster development **Keep this running in your terminal while developing.**
 
 ---
 
@@ -96,26 +96,18 @@ For **consistency across the project**, use these predefined color classes:
 
 **Prefer Tailwind classes over custom CSS.** If you absolutely need custom styles:
 
-1. ✅ **Add global styles** to: `src/common/styles.css`
+1. ✅ **Add global styles** to: `/src/common/styles.css`
 2. ✅ **Create component-specific CSS** only if Tailwind can't achieve the design
-3. ❌ **Do NOT edit** `src/common/output.css` directly
 
 ---
 
 ### **🔗 Linking Stylesheets**
 
-**⚠️ CRITICAL:** Link to the **compiled output file**, not the source file:
+**⚠️ CRITICAL:** All html pages must be linked `/src/common/styles.css`, to be able t ouse TailwindCSS:
 
 ```html
-<!-- ✅ CORRECT -->
-<link rel="stylesheet" href="../common/output.css">
-
-<!-- ❌ WRONG - Do NOT use this -->
-<link rel="stylesheet" href="../common/styles.css">
+<link rel="stylesheet" href="src/common/styles.css">
 ```
-
-**Why?** `output.css` contains the compiled Tailwind CSS. `styles.css` is just the source file.
-
 ---
 
 ## CI/CD
@@ -147,32 +139,52 @@ git push
 ```
 course-project-itcs333-sec04-group25/
 ├── index.html                       # Homepage
+├── vite.config.js                   # Vite configs (Don't touch)
 ├── src/
 │   ├── admin/                       # Task 1: Admin Portal
-│   │   └── manage_users.html
+│   │   ├── manage_users.html
+│   │   └── manage_users.js
 │   ├── resources/                   # Task 2: Course Resources
 │   │   ├── admin.html
+│   │   ├── admin.js
 │   │   ├── list.html
-│   │   └── details.html
+│   │   ├── list.js
+│   │   ├── details.html
+│   │   ├── details.js
+│   │   └── api/
 │   ├── weekly/                      # Task 3: Weekly Breakdown
 │   │   ├── admin.html
+│   │   ├── admin.js
 │   │   ├── list.html
-│   │   └── details.html
+│   │   ├── list.js
+│   │   ├── details.html
+│   │   ├── details.js
+│   │   └── api/
 │   ├── assignments/                 # Task 4: Assignments
 │   │   ├── admin.html
+│   │   ├── admin.js
 │   │   ├── list.html
-│   │   └── details.html
+│   │   ├── list.js
+│   │   ├── details.html
+│   │   ├── details.js
+│   │   └── api/
 │   ├── discussion/                  # Task 5: Discussion Boards
-│   │   ├── board.html
-│   │   └── topic.html   
+│   │   ├── baord.html               
+│   │   ├── board.js
+│   │   ├── topic.html
+│   │   └── topic.js
 │   ├── auth/                        # Authentication
-│   │   └── login.html
+│   │   ├── login.html
+│   │   ├── login.js
+│   │   └── students.json
 │   └── common/                      # Shared Resources
-│       ├── styles.css               # Source styles (edit this if needed)
-│       └── output.css               # Compiled styles (don't edit)
+│       └── styles.css               # Global Styles + Tailwind Styles
 ├── assets/                          # Images, fonts, etc.
+│   ├── README.md
+│   └── login.jpg
 ├── examples/
-|   ├── admin-resources-sample.html  # Example of tailwind classes
-|   ├── example.html                 # Example of tailwind classes
-├── package.json                     # Node dependencies
+│   ├── admin-resources-sample.html  # Tailwind examples
+│   └── example.html                 # Tailwind examples
+├── package.json                     # Node dependencies (Don't touch)
+└── package-lock.json
 ```
