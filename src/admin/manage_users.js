@@ -417,20 +417,23 @@ async function handleAddStudent(event) {
  * 3. (Optional) Check for "edit-btn" and implement edit logic.
  */
 async function handleTableClick(event) {
-  if (event.target.classList.contains("delete-btn")) {
+  const deleteBtn = event.target.closest(".delete-btn");
+  const editBtn = event.target.closest(".edit-btn");
+
+  if (deleteBtn) {
     const confirmed = await showConfirm(
       "Are you sure you want to delete this student?"
     );
     if (!confirmed) return;
 
-    const studentId = event.target.getAttribute("data-id");
+    const studentId = deleteBtn.getAttribute("data-id");
     students = students.filter((student) => student.id !== studentId);
     renderTable(students);
     await showAlert("Student deleted successfully!", "success");
   }
 
-  if (event.target.classList.contains("edit-btn")) {
-    const studentId = event.target.getAttribute("data-id");
+  if (editBtn) {
+    const studentId = editBtn.getAttribute("data-id");
     const student = students.find((s) => s.id === studentId);
 
     const updatedData = await showEditStudentForm(student);
