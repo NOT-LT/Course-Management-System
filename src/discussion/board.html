@@ -1,115 +1,108 @@
-<!--
-  Requirement: Create the General Discussion Board
-
-  Instructions:
-  This page will list all discussion topics and include a form to create a new one.
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <!-- TODO: Add the 'meta' tag for character encoding (UTF-8). -->
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+
     <!-- TODO: Add the responsive 'viewport' meta tag. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- TODO: Add a title, e.g., "Discussion Board". -->
-    <title>General Discussion Board</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- TODO: Add a title for the page. -->
+    <title>Discussion Board</title>
+
     <!-- TODO: Link to your CSS framework or stylesheet. -->
     <link rel="stylesheet" href="../common/styles.css">
+
     <script src="board.js" defer></script>
 </head>
-<body>
 
-    <!-- TODO: Create a 'header' with a main heading ('h1') "General Discussion Board". -->
-    <header>
-        <h1>General Discussion Board</h1>
-    </header>
-    <!-- TODO: Create the 'main' content area. -->
-        <main>
-        <!-- Section 1: Create a New Topic -->
-        <!-- TODO: Create a 'section' for the "new topic" form. -->
-            <!-- TODO: Add a sub-heading ('h2') "Start a New Topic". -->
-                <section id="new-topic-section">
-                    <h2>Start a New Topic</h2>
-            <!-- TODO: Create a 'form' with an id "new-topic-form". Action can be '#'. -->
-                    <form id="new-topic-form" action="#" method="post">
-                <!-- TODO: Use a 'fieldset' to group the form controls. -->
-                        <fieldset>
-                    <!-- TODO: Add a 'legend', e.g., "New Topic Details". -->
-                            <legend>New Topic Details</legend>
-                    <!-- TODO: Add a 'label' and 'input' for the topic subject.
-                         - label 'for': "topic-subject"
-                         - input 'id': "topic-subject", type="text", required -->
-                            <label for="topic-subject">Subject:</label>
-                            <input type="text" id="topic-subject" name="topic-subject" required>
-                    <!-- TODO: Add a 'label' and 'textarea' for the main message.
-                         - label 'for': "topic-message"
-                         - textarea 'id': "topic-message", rows="6", required -->
-                            <label for="topic-message">Message:</label>
-                            <textarea id="topic-message" name="topic-message" rows="6" required></textarea>
+<!-- TODO: Add a body container for styling (already done). -->
+<body class="bg-gray-50 min-h-screen p-6">
 
-                    <!-- TODO: Add a 'button' to submit the form.
-                         - id="create-topic", type="submit", Text: "Create Topic" -->
-                            <button type="submit" id="create-topic">Create Topic</button>
-                        </fieldset>
-                <!-- End of fieldset. -->
-                    </form>
-            <!-- End of form. -->
-                </section>
-        <!-- End of form section. -->
+<main class="max-w-4xl mx-auto space-y-10">
 
+    <!-- Section 1: Create a New Topic -->
+    <!-- TODO: Create a 'section' for the new topic form. -->
+    <section id="new-topic-section" class="card p-6 rounded-xl shadow-md space-y-6 bg-white">
 
-        <!-- Section 2: Existing Topics -->
-        <!-- TODO: Create a 'section' to display the list of current topics. -->
-            <!-- TODO: Add a sub-heading ('h2') "All Topics". -->
-        <section id="topics-list-section">
-                <h2>All Topics</h2>
-            
-            <!-- TODO: Add a container (like a 'div') to hold the list of topics. -->
-            <div id="topic-list-container">
+        <!-- TODO: Add a sub-heading ('h2') for this section. -->
+        <h2 class="text-3xl font-semibold mb-4">Start a New Topic</h2>
 
-                <!-- TODO: Add 2-3 dummy topics using the structure below. -->
-                <!-- Example Topic 1: -->
-                <!-- TODO: Use an 'article' for each topic. -->
-                <article class="topic-item">
-                    <!-- TODO: Add a heading ('h3') containing an anchor tag ('a') linking to the detail page.
-                         - The link's 'href' can be "topic-detail.html" for now.
-                         - The link text should be a dummy topic title, e.g., "Question about CSS Flexbox". -->
-                    <h3><a href="topic.html">Question about CSS Flexbox</a></h3>
-                    
-                    <!-- TODO: Use a 'footer' element for metadata. -->
-                    <footer class="topic-metadata">
-                        <!-- TODO: Add text like "Posted by: Student Name on YYYY-MM-DD". -->
-                        <p>Posted by: Mohammed on 2025-11-10</p>
-                    </footer>
-                    <!-- End of footer. -->
+        <!-- TODO: Add form for creating a new topic. -->
+        <form id="new-topic-form" class="space-y-6">
 
-                    <!-- TODO: Add a container (e.g., a 'div') for action buttons. -->
-                    <div class="topic-actions">
-                        <!-- TODO: Add an "Edit" button/link. -->
-                        <a href="#" class="edit-topic">Edit</a>
-                        <!-- TODO: Add a "Delete" button/link. -->
-                        <a href="#" class="delete-topic">Delete</a>
-                    </div>
-                        <!-- NOTE: For the exercise, you can add these for all topics. In a real app,
-                             these buttons would only be visible to the topic's author or the admin. -->
-                </article>
-                    <!-- End of actions container. -->
-                <!-- End of article. -->
-                <article class="topic-item">
-                    <h3><a href="topic.html">How to center a div in CSS?</a></h3>
-                    <footer class="topic-metadata">
-                        <p>Posted by: Anna on 2025-11-10</p>
-                    </footer>
-                    <div class="topic-actions">
-                        <a href="#" class="edit-topic">Edit</a>
-                        <a href="#" class="delete-topic">Delete</a>
-                    </div>
-                </article>
-            <!-- End of topics container. -->
-            </div>
-        </section>  
-        <!-- End of list section. -->
-         </main>
-    <!-- End of main. -->
+            <!-- TODO: Use a 'fieldset' to group the form fields. -->
+            <fieldset class="space-y-4">
+
+                <!-- TODO: Add a 'legend' describing the form group. -->
+                <legend class="text-xl font-bold border-b pb-2">New Topic Details</legend>
+
+                <!-- TODO: Add input for the topic subject. -->
+                <label class="font-medium" for="topic-subject">Subject:</label>
+                <input type="text" id="topic-subject" required class="input">
+
+                <!-- TODO: Add textarea for the topic message. -->
+                <label class="font-medium" for="topic-message">Message:</label>
+                <textarea id="topic-message" rows="6" required class="input"></textarea>
+
+                <!-- TODO: Add submit button. -->
+                <button type="submit" class="btn btn-primary w-full">Create Topic</button>
+
+            </fieldset>
+        </form>
+    </section>
+
+    <!-- Section 2: List of existing topics -->
+    <!-- TODO: Create a section to list all topics. -->
+    <section id="topics-list-section" class="space-y-6">
+
+        <!-- TODO: Add section heading. -->
+        <h2 class="text-3xl font-semibold">All Topics</h2>
+
+        <!-- TODO: Add container for topic items. -->
+        <div id="topic-list-container" class="space-y-6">
+
+            <!-- TODO: Add an article for each topic. -->
+            <article class="topic-item card p-5 rounded-lg shadow-md space-y-3 bg-white">
+
+                <!-- TODO: Add heading linking to the topic detail page. -->
+                <h3 class="text-2xl font-bold">
+                    <a href="topic.html" class="hover:underline">Question about CSS Flexbox</a>
+                </h3>
+
+                <!-- TODO: Add metadata footer (posted by). -->
+                <footer class="topic-metadata text-sm text-muted-foreground">
+                    <p>Posted by: Mohammed on 2025-11-10</p>
+                </footer>
+
+                <!-- TODO: Add actions (edit/delete). -->
+                <div class="topic-actions flex gap-4 pt-2">
+                    <a href="#" class="text-info hover:underline">Edit</a>
+                    <a href="#" class="text-destructive hover:underline">Delete</a>
+                </div>
+            </article>
+
+            <!-- Another dummy topic -->
+            <article class="topic-item card p-5 rounded-lg shadow-md space-y-3 bg-white">
+                <h3 class="text-2xl font-bold">
+                    <a href="topic.html" class="hover:underline">How to center a div in CSS?</a>
+                </h3>
+
+                <footer class="topic-metadata text-sm text-muted-foreground">
+                    <p>Posted by: Anna on 2025-11-10</p>
+                </footer>
+
+                <div class="topic-actions flex gap-4 pt-2">
+                    <a href="#" class="text-info hover:underline">Edit</a>
+                    <a href="#" class="text-destructive hover:underline">Delete</a>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+</main>
+
 </body>
 </html>
+
