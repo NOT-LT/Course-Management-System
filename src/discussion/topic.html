@@ -13,82 +13,105 @@
     <!-- TODO: Add a title, for now use "Topic Details". -->
     <title>Topic Details</title>
     <!-- TODO: Link to your CSS framework or stylesheet. -->
-     <link rel="stylesheet" href="../common/styles.css">
+    <link rel="stylesheet" href="../common/styles.css">
 </head>
-<body>
+
+<body class="bg-gray-50 min-h-screen p-6">
+
     <!-- TODO: Create a 'header' with a main heading ('h1'). Use a dummy title like "Question about CSS Flexbox". -->
-    <header>
-        <h1>Question about CSS Flexbox</h1>
+    <header class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-900">Question about CSS Flexbox</h1>
     </header>
+
     <!-- TODO: Create the 'main' content area. -->
-    <main>
+    <main class="space-y-10 max-w-4xl mx-auto">
+
         <!-- Section 1: Original Post -->
         <!-- TODO: Use an 'article' to display the main topic post. Give it an 'id' like "original-post". -->
-         <article id="original-post">
+        <article id="original-post" class="bg-white p-6 rounded-xl shadow-md space-y-4">
             <!-- TODO: Add a paragraph ('p') with the dummy text of the original message. -->
-             <p>I am having trouble aligning items using CSS Flexbox. Can someone help?</p>
+            <p class="text-gray-800">I am having trouble aligning items using CSS Flexbox. Can someone help?</p>
+
             <!-- TODO: Use a 'footer' for the metadata: "Posted by: Student Name on YYYY-MM-DD". -->
-             <footer>Posted by: Mohammed on 2025-11-10</footer>
+            <footer class="text-sm text-gray-500">
+                Posted by: Mohammed on 2025-11-10
+            </footer>
+
             <!-- TODO: Add a container for "Edit" and "Delete" buttons, just like on the main page.
                  Remember, these actions are restricted to the owner or admin. -->
-                 <div class="post-actions">
-                    <button>Edit</button>
-                    <button>Delete</button>
-                 </div>
-         </article>
+            <div class="post-actions flex gap-4 pt-2">
+                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Edit</button>
+                <button class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+            </div>
+        </article>
         <!-- End of article. -->
+
         
         <!-- Section 2: Replies -->
         <!-- TODO: Create a 'section' for the replies, with an 'id' of "replies-section". -->
-        <section id="replies-section">
+        <section id="replies-section" class="space-y-6">
             <!-- TODO: Add a sub-heading ('h2') "Replies". -->
-            <h2>Replies</h2>
+            <h2 class="text-3xl font-semibold">Replies</h2>
+
             <!-- TODO: Add a container (like a 'div') for the list of replies. -->
-            <div class="replies-list">
+            <div class="replies-list space-y-6">
+
                 <!-- TODO: Add 1-2 dummy replies to show the structure. -->
                 <!-- Example Reply 1: -->
                 <!-- TODO: Use an 'article' for each reply. -->
-                <article class="reply">
+                <article class="reply bg-white p-5 rounded-lg shadow-md space-y-3">
                     <!-- TODO: Use a 'p' for the reply text (e.g., "Have you tried using 'justify-content: space-between'?"). -->
-                    <p>Have you tried using 'justify-content: space-between'?</p>
+                    <p class="text-gray-800">Have you tried using 'justify-content: space-between'?</p>
+
                     <!-- TODO: Use a 'footer' to show the author and date. -->
-                    <footer>Posted by: Jane Doe on 2025-11-10</footer>
+                    <footer class="text-sm text-gray-500">
+                        Posted by: Jane Doe on 2025-11-10
+                    </footer>
+
                     <!-- TODO: Add a container for "Edit" and "Delete" buttons for this specific reply.
                          These actions are restricted to the reply's author or the admin. -->
-                    <div class="reply-actions">
-                        <button>Edit</button>
-                        <button>Delete</button>
+                    <div class="reply-actions flex gap-4 pt-2">
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Edit</button>
+                        <button class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
                     </div>
                 </article>
                 <!-- End of reply article. -->
+            </div>
         </section>
 
         <!-- Section 3: Add a Reply Form -->
         <!-- TODO: Create a 'section' for the reply form. -->
-        <section id="reply-form-section">
+        <section id="reply-form-section" class="bg-white p-6 rounded-xl shadow-md space-y-6">
             <!-- TODO: Add a sub-heading ('h2') "Post a Reply". -->
-            <h2>Post a Reply</h2>
+            <h2 class="text-3xl font-semibold">Post a Reply</h2>
+
             <!-- TODO: Create a 'form' for users to post new replies. Action can be '#'. -->
-            <form action="#" method="post">
+            <form action="#" method="post" class="space-y-6">
                 <!-- TODO: Use a 'fieldset' to group the controls. -->
-                <fieldset>
+                <fieldset class="space-y-4">
                     <!-- TODO: Add a 'legend', e.g., "Your Reply". -->
-                    <legend>Your Reply</legend>
+                    <legend class="text-xl font-bold border-b pb-2">Your Reply</legend>
+
                     <!-- TODO: Add a 'label' and 'textarea' for the reply message.
                          - label 'for': "new-reply"
                          - textarea 'id': "new-reply", required -->
-                    <label for="new-reply">Message:</label>
-                    <textarea id="new-reply" name="new-reply" required></textarea>
+                    <label for="new-reply" class="font-medium">Message:</label>
+                    <textarea id="new-reply" name="new-reply" required class="w-full p-3 border rounded-lg"></textarea>
                     
                     <!-- TODO: Add a 'button' to submit the reply.
                          - type="submit", Text: "Post Reply" -->
-                    <button type="submit">Post Reply</button>
+                    <button type="submit" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 w-full">
+                        Post Reply
+                    </button>
                 </fieldset>
                 <!-- End of fieldset. -->
             </form>
             <!-- End of form. -->
         </section>
         <!-- End of replies section. -->
+
     <!-- End of main. -->
+    </main>
+
 </body>
 </html>
