@@ -541,6 +541,7 @@ try {
         // TODO: Check if student_id is provided in query parameters
         // If yes, call getStudentById()
         // If no, call getStudents() to get all students (with optional search/sort)
+        requireAdmin();
         if (isset($_GET['id'])) {
             getStudentById($db, $_GET['id']);
         } else {
@@ -552,6 +553,7 @@ try {
         // Look for action=change_password in query parameters
         // If yes, call changePassword()
         // If no, call createStudent()
+        requireAdmin();
         if (isset($_GET['action']) && $_GET['action'] === 'change_password') {
             changePassword($db, $data);
         } else {
@@ -560,11 +562,13 @@ try {
 
     } elseif ($method === 'PUT') {
         // TODO: Call updateStudent()
+        requireAdmin();
         updateStudent($db, $data);
 
     } elseif ($method === 'DELETE') {
         // TODO: Get student_id from query parameter or request body
         // Call deleteStudent()
+        requireAdmin();
         $studentId = $_GET['id'] ?? ($data['id'] ?? null);
         deleteStudent($db, $studentId);
 
@@ -641,6 +645,15 @@ function sanitizeInput($data)
     // TODO: Convert special characters using htmlspecialchars()
     // Return sanitized data
     return htmlspecialchars(strip_tags(trim($data)));
+}
+
+// Helper function to check admin access
+function requireAdmin() {
+    if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
+        http_response_code(403); 
+        echo json_encode(['error' => 'Access denied — only admins can access this API']);
+        exit;
+    }
 }
 
 ?>

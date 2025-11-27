@@ -126,7 +126,7 @@ try {
 // Use a WHERE clause to filter by email
 // IMPORTANT: Use a placeholder (? or :email) for the email value
 // This prevents SQL injection attacks
-    $sql = "SELECT id, name, email, password FROM users WHERE email = :email";
+    $sql = "SELECT id, name, email, is_admin, password FROM users WHERE email = :email";
 
 
     // --- Prepare the Statement ---
@@ -172,6 +172,8 @@ try {
             $_SESSION['user_name'] = $user['name'];
             $_SESSION['user_email'] = $user['email'];
             $_SESSION['logged_in'] = true;
+            $_SESSION['is_admin'] = $user['is_admin'];
+
 
             // TODO: Prepare a success response array
             // Include:
