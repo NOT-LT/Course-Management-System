@@ -51,13 +51,19 @@
 // HEADERS AND INITIALIZATION
 // ============================================================================
 
+// TODO: Include the database connection class
+// Assume the Database class has a method getConnection() that returns a PDO instance
+// Example: require_once '../config/Database.php';
+require_once __DIR__ . '/../../common/DatabaseHelper.php';
+require_once __DIR__ . '/../../common/DBConfig.php';
+
 // TODO: Set headers for JSON response and CORS
 // Set Content-Type to application/json
 // Allow cross-origin requests (CORS) if needed
 // Allow specific HTTP methods (GET, POST, PUT, DELETE, OPTIONS)
 // Allow specific headers (Content-Type, Authorization)
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: http://localhost:5173/"); // Temporary
+header("Access-Control-Allow-Origin: " . ($_ENV['FRONTEND_URL'] ?? 'http://localhost:5173'));
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE");
 header("Access-Control-Allow-Credentials: true");
@@ -69,12 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === "OPTIONS") {
     exit; // Retuns 200 reponse code with empty reponse body
 }
 
-// TODO: Include the database connection class
-// Assume the Database class has a method getConnection() that returns a PDO instance
-// Example: require_once '../config/Database.php';
-require_once __DIR__ . '/../../common/DatabaseHelper.php';
-require_once __DIR__ . '/../../common/DBConfig.php';
 
+$user_id =$_SESSION["user_id"];
 
 // TODO: Get the PDO database connection
 // Example: $database = new Database();
@@ -414,6 +416,7 @@ function deleteResource($db, $resourceId)
             "message" => "The provided resource id is invalid."
         ], 400);
     }
+
     // TODO: Check if resource exists
     // Prepare and execute a SELECT query
     // If not found, return error response with 404 status
@@ -703,7 +706,7 @@ try {
                 deleteComment($db, $comment_id);
                 break;
             default:
-                deleteResource($db, $resource_id);
+                deleteResource($db, $id);
         }
     } else {
         // TODO: Return error for unsupported methods
