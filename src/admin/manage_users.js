@@ -11,6 +11,8 @@
 
 // --- Global Data Store ---
 // This array will be populated with data fetched from 'students.json'.
+const API_HOST = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+console.log(API_HOST);
 let students = [];
 
 // --- Element Selections ---
@@ -141,17 +143,16 @@ function showAlert(message, type = "info") {
       type === "success"
         ? "alert-success"
         : type === "error"
-        ? "alert-error"
-        : "alert-info";
+          ? "alert-error"
+          : "alert-info";
     const iconSvg =
       type === "success"
         ? `<svg class="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
         : type === "error"
-        ? `<svg class="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
-        : `<svg class="w-8 h-8 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+          ? `<svg class="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+          : `<svg class="w-8 h-8 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
     modal.innerHTML = `
-      <div class="bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 border-2 border-${
-        type === "success" ? "success" : type === "error" ? "error" : "info"
+      <div class="bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 border-2 border-${type === "success" ? "success" : type === "error" ? "error" : "info"
       }/30 animate-in">
         <div class="flex items-start gap-4 mb-6">
           ${iconSvg}
@@ -360,7 +361,7 @@ async function handleChangePassword(event) {
   // Note: The user ID will be retrieved from the session on the server side
   try {
     const response = await fetch(
-      "http://localhost:8000/admin/api/index.php?action=change_password",
+      `${API_HOST}/admin/api/index.php?action=change_password`,
       {
         method: "POST",
         credentials: "include", // Include session cookies
@@ -424,7 +425,7 @@ async function handleAddStudent(event) {
     return;
   }
   try {
-    const response = await fetch("http://localhost:8000/admin/api/index.php", {
+    const response = await fetch(`${API_HOST}/admin/api/index.php`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -489,7 +490,7 @@ async function handleTableClick(event) {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/admin/api/index.php?id=${studentId}`,
+        `${API_HOST}/admin/api/index.php?id=${studentId}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -545,7 +546,7 @@ async function handleTableClick(event) {
       }
 
       const response = await fetch(
-        "http://localhost:8000/admin/api/index.php",
+        `${API_HOST}/admin/api/index.php`,
         {
           method: "PUT",
           credentials: "include",
@@ -654,7 +655,7 @@ function generatePassword() {
  */
 async function checkAuth() {
   try {
-    const response = await fetch("http://localhost:8000/admin/api/index.php", {
+    const response = await fetch(`${API_HOST}/admin/api/index.php`, {
       credentials: "include",
     });
 
@@ -666,7 +667,7 @@ async function checkAuth() {
       );
       setTimeout(() => {
         window.location.href = "../../index.html";
-      }, 2000);
+      }, 10);
       return false;
     }
 
@@ -684,7 +685,7 @@ async function checkAuth() {
       );
       setTimeout(() => {
         window.location.href = "../../index.html";
-      }, 2000);
+      }, 10);
       return false;
     }
 
@@ -694,7 +695,7 @@ async function checkAuth() {
     await showAlert("Authentication failed. Please log in.", "error");
     setTimeout(() => {
       window.location.href = "../../index.html";
-    }, 2000);
+    }, 10);
     return false;
   }
 }
@@ -704,7 +705,7 @@ async function checkAuth() {
  */
 async function loadStudents() {
   try {
-    const response = await fetch("http://localhost:8000/admin/api/index.php", {
+    const response = await fetch(`${API_HOST}/admin/api/index.php`, {
       credentials: "include",
     });
 
@@ -779,6 +780,7 @@ async function loadStudentsAndInitialize() {
     return; // Stop execution if not authenticated
   }
 
+  // Show the page after successful authentication
   await loadStudents();
 
   // Set up event listeners
@@ -797,3 +799,6 @@ async function loadStudentsAndInitialize() {
 // --- Initial Page Load ---
 // Call the main async function to start the application.
 loadStudentsAndInitialize();
+document.body.style.visibility = 'visible';
+
+

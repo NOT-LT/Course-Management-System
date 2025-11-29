@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Student Management API
  * 
@@ -35,7 +36,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Allow specific HTTP methods (GET, POST, PUT, DELETE, OPTIONS)
 // Allow specific headers (Content-Type, Authorization)
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: http://localhost:5173');
+header("Access-Control-Allow-Origin: " . ($_ENV['FRONTEND_URL'] ?? 'http://localhost:5173'));
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Access-Control-Allow-Credentials: true');
@@ -53,8 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Assume the Database class has a method getConnection() that returns a PDO instance
 
 // TODO: Get the PDO database connection
-require_once '../../common/DatabaseHelper.php';
-require_once '../../common/DBConfig.php';
+require_once __DIR__ . '/../../common/DatabaseHelper.php';
+require_once __DIR__ . '/../../common/DBConfig.php';
+require_once __DIR__ . '/../../common/middlewares.php';
 
 $dbHelper = new DatabaseHelper(
     $config['host'],
@@ -547,7 +549,6 @@ try {
         } else {
             getStudents($db);
         }
-
     } elseif ($method === 'POST') {
         // TODO: Check if this is a change password request
         // Look for action=change_password in query parameters
@@ -559,19 +560,16 @@ try {
         } else {
             createStudent($db, $data);
         }
-
     } elseif ($method === 'PUT') {
         // TODO: Call updateStudent()
         requireAdmin();
         updateStudent($db, $data);
-
     } elseif ($method === 'DELETE') {
         // TODO: Get student_id from query parameter or request body
         // Call deleteStudent()
         requireAdmin();
         $studentId = $_GET['id'] ?? ($data['id'] ?? null);
         deleteStudent($db, $studentId);
-
     } else {
         // TODO: Return error for unsupported methods
         // Set HTTP status to 405 (Method Not Allowed)
@@ -579,14 +577,12 @@ try {
         http_response_code(405); // Method Not Allowed
         echo json_encode(['error' => 'Method not allowed']);
     }
-
 } catch (PDOException $e) {
     // TODO: Handle database errors
     // Log the error message (optional)
     // Return generic error response with 500 status
     http_response_code(500); // Internal Server Error
     echo json_encode(['error' => 'Database error occurred']);
-
 } catch (Exception $e) {
     // TODO: Handle general errors
     // Return error response with 500 status
@@ -646,14 +642,3 @@ function sanitizeInput($data)
     // Return sanitized data
     return htmlspecialchars(strip_tags(trim($data)));
 }
-
-// Helper function to check admin access
-function requireAdmin() {
-    if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
-        http_response_code(403); 
-        echo json_encode(['error' => 'Access denied — only admins can access this API']);
-        exit;
-    }
-}
-
-?>

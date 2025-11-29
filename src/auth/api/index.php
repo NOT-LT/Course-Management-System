@@ -32,7 +32,7 @@ header('Content-Type: application/json');
 
 // TODO: (Optional) Set CORS headers if your frontend and backend are on different domains
 // You'll need headers for Access-Control-Allow-Origin, Methods, and Headers
-header('Access-Control-Allow-Origin: http://localhost:5173'); // Adjust the origin as needed
+header("Access-Control-Allow-Origin: " . ($_ENV['FRONTEND_URL'] ?? 'http://localhost:5173'));
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Credentials: true'); // Required to send cookies cross-origin
