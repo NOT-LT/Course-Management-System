@@ -128,21 +128,51 @@ function renderComments() {
  * 6. Call `renderComments()` to refresh the list.
  * 7. Clear the `newCommentText` textarea.
  */
-function handleAddComment(event) {
+//const studentName = localStorage.getItem('studentName') || 'Student';
+async function handleAddComment(event) {
   event.preventDefault();
   const commentText = newCommentText.value.trim();
   if (commentText === '') {
     return;
   }
+
   const newComment = {
     author: 'Student',
-    text: commentText
+    text: commentText,
+    week_id: currentWeekId
   };
-  currentComments.push(newComment);
-  renderComments();
-  newCommentText.value = '';
-}
 
+  try {
+    // POST the new comment to the backend API
+    const response = await fetch(`http://localhost:8000/src/weekly/api/index.php?resource=comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newComment)
+    });
+    const result = await response.json();
+
+    if (result.success) {
+      // Reload comments from backend
+      const commentsResponse = await fetch(`http://localhost:8000/src/weekly/api/index.php?resource=comments&week_id=${currentWeekId}`);
+      const commentsResult = await commentsResponse.json();
+      currentComments = (commentsResult.success && Array.isArray(commentsResult.data))
+        ? commentsResult.data.map(c => ({
+            author: c.author,
+            text: c.text
+          }))
+        : [];
+      renderComments();
+      newCommentText.value = '';
+    } else {
+      alert('Failed to post comment.');
+    }
+  } catch (error) {
+    alert('Error posting comment.');
+    console.error(error);
+  }
+}
 /**
  * TODO: Implement an `initializePage` function.
  * This function needs to be 'async'.
@@ -162,29 +192,52 @@ function handleAddComment(event) {
  */
 async function initializePage() {
   currentWeekId = getWeekIdFromURL();
-  
+
   if (!currentWeekId) {
     weekTitle.textContent = "Week not found.";
     return;
   }
 
-  const [weeksResponse, commentsResponse] = await Promise.all([
-    fetch('api/weeks.json'),
-    fetch('api/comments.json')
-  ]);
+  // Fetch week details and comments from the API
+  try {
+    // Fetch the week by ID
+    const weekResponse = await fetch(`http://localhost:8000/src/weekly/api/index.php?resource=weeks&id=${currentWeekId}`);
+    const weekResult = await weekResponse.json();
 
-  const weeksData = await weeksResponse.json();
-  const commentsData = await commentsResponse.json();
+    // Fetch comments for this week
+    const commentsResponse = await fetch(`http://localhost:8000/src/weekly/api/index.php?resource=comments&week_id=${currentWeekId}`);
+    const commentsResult = await commentsResponse.json();
 
-  const week = weeksData.find(w => w.id === currentWeekId);
-  currentComments = commentsData[currentWeekId] || [];
+    // Check and map week data
+    let week = null;
+    if (weekResult.success && weekResult.data) {
+      week = {
+        id: weekResult.data.id,
+        title: weekResult.data.title,
+        startDate: weekResult.data.start_date,
+        description: weekResult.data.description,
+        links: weekResult.data.links
+      };
+    }
 
-  if (week) {
-    renderWeekDetails(week);
-    renderComments();
-    commentForm.addEventListener('submit', handleAddComment);
-  } else {
-    weekTitle.textContent = "Week not found.";
+    // Check and map comments data
+    currentComments = (commentsResult.success && Array.isArray(commentsResult.data))
+      ? commentsResult.data.map(c => ({
+          author: c.author,
+          text: c.text
+        }))
+      : [];
+
+    if (week) {
+      renderWeekDetails(week);
+      renderComments();
+      commentForm.addEventListener('submit', handleAddComment);
+    } else {
+      weekTitle.textContent = "Week not found.";
+    }
+  } catch (error) {
+    weekTitle.textContent = "Error loading week details.";
+    console.error(error);
   }
 }
 
