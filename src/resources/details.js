@@ -31,7 +31,8 @@ const closeCommentModalBtn = document.getElementById('close-comment-modal-btn');
 const cancelCommentBtn = document.getElementById('cancel-comment-btn');
 const commentForm = document.getElementById('comment-form');
 const commentFormMobileWrapper = document.getElementById('comment-form-mobile-wrapper');
-
+const commentsCount = document.getElementById('comments-count');
+const postData = document.getElementById('post-date');
 // Move form to mobile modal on mobile, keep on desktop otherwise
 function handleFormPlacement() {
   if (window.innerWidth < 768) { // md breakpoint
@@ -217,9 +218,9 @@ async function handleAddComment(event) {
   event.preventDefault();
   const commentText = newComment.value.trim();
   if (commentText) {
-    const comment = { author: 'Student', text: commentText }
-    const result = await APIAddComment("Student", commentText);;
-    if(result.success){
+    const comment = { author: localStorage.getItem("user_name") || 'Student', text: commentText }
+    const result = await APIAddComment(comment.author, comment.text);;
+    if (result.success) {
       currentComments.push(comment);
       renderComments();
       newComment.value = "";
@@ -229,7 +230,7 @@ async function handleAddComment(event) {
   }
 }
 
-async function APIAddComment(author, text){
+async function APIAddComment(author, text) {
   try {
     const req = await fetch(`${API_HOST}/resources/api/index.php?action=comment`, {
       method: "POST",
@@ -237,11 +238,11 @@ async function APIAddComment(author, text){
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({resource_id:currentResourceId, author, text})
+      body: JSON.stringify({ resource_id: currentResourceId, author, text })
     });
     const res = await req.json();
     return res; // Return the full response object
-  } catch (e){
+  } catch (e) {
     console.error("API Error:", e);
     return { success: false, message: " error: " + e.message };
   }
@@ -271,7 +272,6 @@ const shareResourceBtn = document.getElementById("share-resource-btn");
 // Share button functionality
 if (shareResourceBtn) {
   shareResourceBtn.addEventListener("click", async () => {
-    const resourceId = getResourceIdFromURL();
     const shareUrl = window.location.href;
     const resourceTitleText = resourceTitle?.textContent || "Resource";
 
@@ -301,13 +301,24 @@ async function initializePage() {
   currentResourceId = Number(getResourceIdFromURL());
 
   if (!currentResourceId) { resourceTitle.textContent = "Resource not found."; return; }
-  const [r, c] = await Promise.all([fetch(`${API_HOST}/resources/api/index.php?id=${currentResourceId}`), fetch(`${API_HOST}/resources/api/index.php?resource_id=${currentResourceId}&action=comments`)])
+  const [r, c] = await Promise.all([
+    fetch(`${API_HOST}/resources/api/index.php?id=${currentResourceId}`, { credentials: "include" }),
+    fetch(`${API_HOST}/resources/api/index.php?resource_id=${currentResourceId}&action=comments`, { credentials: "include" })
+  ])
   const currentResource = (await r.json()).data;
   currentComments = (await c.json()).data || [];
   if (currentResource) {
     renderResourceDetails(currentResource);
     renderComments();
     commentForm.addEventListener("submit", e => handleAddComment(e)); // OR u could do commentForm.addEventListener("submit", handleAddComment)
+    commentsCount.textContent = currentComments.length + " Comments";
+    postData.textContent = currentResource.created_at.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",   // Jan, Feb, Mar...
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });;
   } else {
     resourceTitle.textContent = "Error! No Resource is found";
     discussionForm.innerHTML = '';
@@ -317,5 +328,47 @@ async function initializePage() {
   }
 }
 
+async function checkLogin() {
+  try {
+    const response = await fetch(`${API_HOST}/resources/api/index.php`, {
+      credentials: "include",
+    });
+
+    // If we get a 403 (Forbidden) or 401 (Unauthorized), redirect to login
+    if (response.status === 403 || response.status === 401) {
+      await redirectToLogin();
+      return false;
+    }
+
+    const result = await response.json();
+
+    // If the API returns an access denied error, redirect to login
+    if (
+      !result.success &&
+      (result.error === "Access denied" ||
+        result.error === "Admin access required")
+    ) {
+      await redirectToLogin();
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Authentication check failed:", error);
+    await redirectToLogin("Authentication failed. Please log in.");
+    return false;
+  }
+}
+
+async function redirectToLogin(message = "Please login first to access to this page.") {
+  await showAlert(message, "Error");
+  setTimeout(() => {
+    window.location.href = "../auth/login.html";
+  }, 10);
+}
+
+
 // --- Initial Page Load ---
-initializePage();
+checkLogin().then(ok => {
+  if (ok) initializePage();
+})

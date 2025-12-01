@@ -662,7 +662,7 @@ async function checkAuth() {
     // If we get a 403 (Forbidden) or 401 (Unauthorized), redirect to login
     if (response.status === 403 || response.status === 401) {
       await showAlert(
-        "Access denied. Only Admin have access to this page.",
+        "Access denied.\nOnly Admin have access to this page.",
         "error"
       );
       setTimeout(() => {
