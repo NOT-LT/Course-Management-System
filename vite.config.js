@@ -57,7 +57,7 @@ function copyJsonMirrorSrc() {
         async writeBundle() {
             const root = resolved.root;
             const outDir = path.resolve(root, resolved.build.outDir);
-            
+
             // Copy JSON files
             const jsonFiles = await fg("src/**/*.json", { cwd: root, dot: false });
             await Promise.all(
@@ -68,7 +68,7 @@ function copyJsonMirrorSrc() {
                     await fs.copyFile(from, to);
                 })
             );
-            
+
             // Copy PHP files
             const phpFiles = await fg("src/**/*.php", { cwd: root, dot: false });
             await Promise.all(
@@ -79,7 +79,7 @@ function copyJsonMirrorSrc() {
                     await fs.copyFile(from, to);
                 })
             );
-            
+
             // Copy SQL files
             const sqlFiles = await fg("src/**/*.sql", { cwd: root, dot: false });
             await Promise.all(
@@ -90,7 +90,7 @@ function copyJsonMirrorSrc() {
                     await fs.copyFile(from, to);
                 })
             );
-            
+
             // Copy HTML files from src
             const htmlFiles = await fg("src/**/*.html", { cwd: root, dot: false });
             await Promise.all(
@@ -101,7 +101,7 @@ function copyJsonMirrorSrc() {
                     await fs.copyFile(from, to);
                 })
             );
-            
+
             // Copy CSS files from src (original source files, not processed)
             const cssFiles = await fg("src/**/*.css", { cwd: root, dot: false });
             await Promise.all(
@@ -112,7 +112,7 @@ function copyJsonMirrorSrc() {
                     await fs.copyFile(from, to);
                 })
             );
-            
+
             // Copy root level files including .env
             const rootFiles = ['DbSchema.sql', 'LICENSE', 'README.md', 'index.html', '.env'];
             await Promise.all(
@@ -126,7 +126,7 @@ function copyJsonMirrorSrc() {
                     }
                 })
             );
-            
+
             // Move the processed styles.css from dist root to dist/src/common (overwriting the copied source)
             const stylesSource = path.resolve(outDir, 'styles.css');
             const stylesDest = path.resolve(outDir, 'src', 'common', 'styles.css');
