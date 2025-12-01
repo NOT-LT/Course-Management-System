@@ -19,6 +19,7 @@
 
 // --- Global Data Store ---
 // These will hold the data related to *this* specific week.
+import { checkLogin, API_HOST } from "/src/common/helpers.js";
 let currentWeekId = null;
 let currentComments = [];
 
@@ -137,25 +138,28 @@ async function handleAddComment(event) {
   }
 
   const newComment = {
-    author: 'Student',
+    author: localStorage.getItem("user_name") ||'Student',
     text: commentText,
     week_id: currentWeekId
   };
 
   try {
     // POST the new comment to the backend API
-    const response = await fetch(`http://localhost:8000/src/weekly/api/index.php?resource=comments`, {
+    const response = await fetch(`${API_HOST}/weekly/api/index.php?resource=comments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(newComment)
+      body: JSON.stringify(newComment),
+      credentials: "include"
     });
     const result = await response.json();
 
     if (result.success) {
       // Reload comments from backend
-      const commentsResponse = await fetch(`http://localhost:8000/src/weekly/api/index.php?resource=comments&week_id=${currentWeekId}`);
+      const commentsResponse = await fetch(`${API_HOST}/weekly/api/index.php?resource=comments&week_id=${currentWeekId}`, {
+        credentials: "include"
+      });
       const commentsResult = await commentsResponse.json();
       currentComments = (commentsResult.success && Array.isArray(commentsResult.data))
         ? commentsResult.data.map(c => ({
@@ -201,11 +205,15 @@ async function initializePage() {
   // Fetch week details and comments from the API
   try {
     // Fetch the week by ID
-    const weekResponse = await fetch(`http://localhost:8000/src/weekly/api/index.php?resource=weeks&id=${currentWeekId}`);
+    const weekResponse = await fetch(`${API_HOST}/weekly/api/index.php?resource=weeks&id=${currentWeekId}`, {
+      credentials: "include"
+    });
     const weekResult = await weekResponse.json();
 
     // Fetch comments for this week
-    const commentsResponse = await fetch(`http://localhost:8000/src/weekly/api/index.php?resource=comments&week_id=${currentWeekId}`);
+    const commentsResponse = await fetch(`${API_HOST}/weekly/api/index.php?resource=comments&week_id=${currentWeekId}`, {
+      credentials: "include"
+    });
     const commentsResult = await commentsResponse.json();
 
     // Check and map week data
@@ -242,4 +250,6 @@ async function initializePage() {
 }
 
 // --- Initial Page Load ---
-initializePage();
+checkLogin().then(ok => {
+  if (ok) initializePage();
+});

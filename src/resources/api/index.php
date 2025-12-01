@@ -54,9 +54,7 @@
 // TODO: Include the database connection class
 // Assume the Database class has a method getConnection() that returns a PDO instance
 // Example: require_once '../config/Database.php';
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+
 require_once __DIR__ . '/../../common/DatabaseHelper.php';
 require_once __DIR__ . '/../../common/DBConfig.php';
 require_once __DIR__ . '/../../common/middlewares.php';
@@ -79,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === "OPTIONS") {
 }
 
 
-$user_id = $_SESSION["user_id"];
+// $user_id = $_SESSION["user_id"];
 
 // TODO: Get the PDO database connection
 // Example: $database = new Database();

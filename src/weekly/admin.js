@@ -11,6 +11,8 @@
   3. Implement the TODOs below.
 */
 
+import { checkAdmin, API_HOST } from "/src/common/helpers.js";
+
 // --- Global Data Store ---
 // This will hold the weekly data loaded from the JSON file.
 let weeks = [];
@@ -83,7 +85,7 @@ function createWeekRow(week) {
 function renderTable() {
   WeekTbody.innerHTML = '';
 
-  for(week of weeks){
+  for (week of weeks) {
     const row = createWeekRow(week);
     WeekTbody.appendChild(row);
   }
@@ -103,25 +105,26 @@ function renderTable() {
  * 7. Reset the form.
  */
 async function handleAddWeek(event) {
-   event.preventDefault();
+  event.preventDefault();
 
-   const title =  document.querySelector('#week-title').value;
-   const startDate = document.querySelector('#week-start-date').value;
-   const description = document.querySelector('#week-description').value;
+  const title = document.querySelector('#week-title').value;
+  const startDate = document.querySelector('#week-start-date').value;
+  const description = document.querySelector('#week-description').value;
 
-   if (!title.trim() || !startDate || !description.trim()) {
-     alert('Please fill in all required fields with valid content.');
-     return;
-   }
+  if (!title.trim() || !startDate || !description.trim()) {
+    alert('Please fill in all required fields with valid content.');
+    return;
+  }
 
 
-   const linksValue = document.querySelector('#week-links').value;
-   const links = linksValue.split('\n').filter(link => link.trim() !== '');
+  const linksValue = document.querySelector('#week-links').value;
+  const links = linksValue.split('\n').filter(link => link.trim() !== '');
 
   try {
-    const response = await fetch('http://localhost:8000/src/weekly/api/index.php?resource=weeks', {
+    const response = await fetch(`${API_HOST}/src/weekly/api/index.php?resource=weeks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: "include",
       body: JSON.stringify({
         title: title,
         start_date: startDate,
@@ -164,7 +167,7 @@ async function handleTableClick(event) {
       }
     }
   }
-  
+
   if (event.target.classList.contains('edit-btn')) {
     const weekId = event.target.getAttribute('data-id');
     openEditModal(weekId);
@@ -172,8 +175,9 @@ async function handleTableClick(event) {
 }
 
 async function deleteWeekFromAPI(weekId) {
-  const response = await fetch(`http://localhost:8000/src/weekly/api/index.php?resource=weeks&id=${weekId}`, {
-    method: 'DELETE'
+  const response = await fetch(`${API_HOST}/weekly/api/index.php?resource=weeks&id=${weekId}`, {
+    method: 'DELETE',
+      credentials: "include"
   });
   const result = await response.json();
   return result.success;
@@ -206,13 +210,13 @@ function openEditModal(weekId) {
 function closeEditModal() {
   document.querySelector('#modal-content').classList.add('scale-95', 'opacity-0');
   document.querySelector('#modal-content').classList.remove('scale-100', 'opacity-100');
-  
+
   setTimeout(() => {
     editModal.classList.add('hidden');
     editModal.classList.remove('flex');
     editingWeekId = null;
     editForm.reset();
-    
+
     document.body.style.overflow = '';
   }, 300);
 }
@@ -241,7 +245,7 @@ async function handleEditSubmit(event) {
   // --- 1. Immediately update in-memory and DOM ---
   weeks[weekIndex] = updatedWeek;
   renderTable();
-  closeEditModal(); 
+  closeEditModal();
 
   // --- 2. Then send API request in background ---
   try {
@@ -260,7 +264,7 @@ async function handleEditSubmit(event) {
 
 
 async function updateWeekInAPI(week) {
-  const response = await fetch('http://localhost:8000/src/weekly/api/index.php?resource=weeks', {
+  const response = await fetch(`${API_HOST}/weekly/api/index.php?resource=weeks`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -269,7 +273,8 @@ async function updateWeekInAPI(week) {
       start_date: week.startDate,
       description: week.description,
       links: week.links
-    })
+    }),
+    credentials: "include"
   });
   const result = await response.json();
   return result.success;
@@ -287,7 +292,9 @@ async function updateWeekInAPI(week) {
  */
 async function loadAndInitialize() {
   try {
-    const response = await fetch('http://localhost:8000/src/weekly/api/index.php?resource=weeks');
+    const response = await fetch(`${API_HOST}/weekly/api/index.php?resource=weeks`, {
+      credentials: "include"
+    });
     if (!response.ok) throw new Error('Network response was not ok');
 
     const result = await response.json();
@@ -307,11 +314,11 @@ async function loadAndInitialize() {
       console.error('Error loading weeks:', result.error);
       alert('Failed to load weeks: ' + (result.error || 'Unknown error'));
     }
-        WeekForm.addEventListener('submit', handleAddWeek);
-        WeekTbody.addEventListener('click', handleTableClick);
-        editForm.addEventListener('submit', handleEditSubmit);
-        closeModalBtn.addEventListener('click', closeEditModal);
-        cancelEditBtn.addEventListener('click', closeEditModal);
+    WeekForm.addEventListener('submit', handleAddWeek);
+    WeekTbody.addEventListener('click', handleTableClick);
+    editForm.addEventListener('submit', handleEditSubmit);
+    closeModalBtn.addEventListener('click', closeEditModal);
+    cancelEditBtn.addEventListener('click', closeEditModal);
 
     editModal.addEventListener('click', (e) => {
       if (e.target === editModal) {
@@ -329,6 +336,8 @@ async function loadAndInitialize() {
 
 // --- Initial Page Load ---
 // Call the main async function to start the application.
-loadAndInitialize();
+checkAdmin().then(ok => {
+  if (ok) loadAndInitialize();
+})
 
 

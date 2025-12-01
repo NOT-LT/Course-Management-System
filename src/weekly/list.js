@@ -13,6 +13,7 @@
 
 // --- Element Selections ---
 // TODO: Select the section for the week list ('#week-list-section').
+import { checkLogin, API_HOST } from "/src/common/helpers.js";
 const listSection = document.querySelector('#week-list-section');
 
 // --- Functions ---
@@ -66,7 +67,9 @@ function createWeekArticle(week) {
  */
 async function loadWeeks() {
   try {
-    const response = await fetch('http://localhost:8000/src/weekly/api/index.php?resource=weeks');
+    const response = await fetch(`${API_HOST}/weekly/api/index.php?resource=weeks`,{
+      credentials: "include"
+    });
     const apiResult = await response.json();
     if (apiResult.success) {
       const weeks = apiResult.data;
@@ -93,4 +96,7 @@ async function loadWeeks() {
 
 // --- Initial Page Load ---
 // Call the function to populate the page.
-loadWeeks();
+checkLogin().then(ok => {
+  if (ok) loadWeeks();
+})
+

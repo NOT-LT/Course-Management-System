@@ -18,7 +18,7 @@
 
 // --- Global Data Store ---
 // These will hold the data related to *this* resource.
-const API_HOST = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+import { checkLogin, API_HOST } from "/src/common/helpers.js";
 let currentResourceId = null;
 let currentComments = [];
 
@@ -327,46 +327,6 @@ async function initializePage() {
     resourceInfoContainer.innerHTML = '';
   }
 }
-
-async function checkLogin() {
-  try {
-    const response = await fetch(`${API_HOST}/resources/api/index.php`, {
-      credentials: "include",
-    });
-
-    // If we get a 403 (Forbidden) or 401 (Unauthorized), redirect to login
-    if (response.status === 403 || response.status === 401) {
-      await redirectToLogin();
-      return false;
-    }
-
-    const result = await response.json();
-
-    // If the API returns an access denied error, redirect to login
-    if (
-      !result.success &&
-      (result.error === "Access denied" ||
-        result.error === "Admin access required")
-    ) {
-      await redirectToLogin();
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error("Authentication check failed:", error);
-    await redirectToLogin("Authentication failed. Please log in.");
-    return false;
-  }
-}
-
-async function redirectToLogin(message = "Please login first to access to this page.") {
-  await showAlert(message, "Error");
-  setTimeout(() => {
-    window.location.href = "../auth/login.html";
-  }, 10);
-}
-
 
 // --- Initial Page Load ---
 checkLogin().then(ok => {
