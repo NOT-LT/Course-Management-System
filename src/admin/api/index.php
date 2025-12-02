@@ -481,7 +481,7 @@ function changePassword($db, $data)
     // TODO: Validate required fields
     // Check if student_id, current_password, and new_password are provided
     // If any field is missing, return error response with 400 status
-    if (!$userId || !isset($data['current_password']) || !isset($data['new_password'])) {
+    if (!$userId || !isset($data['current_password']) || !isset($data['new_password']) || !isset($data['student_id'])) {
         http_response_code(400); // Bad Request
         echo json_encode([
             'error' => 'Missing required fields',
@@ -496,6 +496,7 @@ function changePassword($db, $data)
     // TODO: Validate new password strength
     // Check minimum length (at least 8 characters)
     // If validation fails, return error response with 400 status
+    $studentId = $data['student_id'];
     $newPassword = $data['new_password'];
     if (strlen($newPassword) < 8) {
         http_response_code(400); // Bad Request
@@ -511,9 +512,14 @@ function changePassword($db, $data)
     // Use password_verify() to check if current_password matches the hash
     // If verification fails, return error response with 401 status (Unauthorized)
     $stmt = $db->prepare($sql);
-    $stmt->bindParam(':id', $userId);
+    $stmt->bindParam(':id', $studentId);
     $stmt->execute();
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$result) {
+        http_response_code(404); // Not Found
+        echo json_encode(['success' => false, 'error' => 'User not found', 'userId' => $userId]);
+        exit;
+    }
 
     // Debug logging
     error_log('User found: ' . ($result ? 'yes' : 'no'));
@@ -546,7 +552,7 @@ function changePassword($db, $data)
     // TODO: Bind parameters and execute
     $stmt = $db->prepare($sql);
     $stmt->bindParam(':password', $hashedNewPassword);
-    $stmt->bindParam(':id', $userId);
+    $stmt->bindParam(':id', $studentId);
 
     if ($stmt->execute()) {
         echo json_encode(['success' => true, 'message' => 'Password changed successfully']);

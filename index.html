@@ -5,10 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Web Dev Course Homepage</title>
     <link rel="stylesheet" href="/src/common/styles.css" />
+    <script type="module">
+      import { themeCheck } from "/src/common/helpers.js";
+      themeCheck();
+    </script>
   </head>
   <body
     class="min-h-screen bg-linear-to-br from-background via-background to-muted/20 antialiased"
   >
+    <!-- Dark Mode Toggle Button -->
+    <button
+      id="dark-mode-toggle"
+      onclick="window.toggleTheme()"
+      class="fixed top-5 right-5 z-50 w-12 h-12 rounded-full bg-card border border-border shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95"
+      aria-label="Toggle Dark Mode"
+    >
+      <svg
+        id="sun-icon"
+        class="w-5 h-5 text-warning hidden transition-transform duration-300"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <circle cx="12" cy="12" r="4" />
+        <path
+          d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+        />
+      </svg>
+      <svg
+        id="moon-icon"
+        class="w-5 h-5 text-primary transition-transform duration-300"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+      >
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+      </svg>
+    </button>
+
     <header
       class="bg-primary-gradient text-primary-foreground py-16 shadow-2xl relative overflow-hidden"
     >
@@ -40,7 +76,7 @@
           <li>
             <a
               href="src/auth/login.html"
-              class=" w-full px-6 py-4 text-lg text-foreground bg-linear-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 border-2 border-primary/30 hover:border-primary/50 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg hover:scale-[1.02] flex items-center gap-3"
+              class="w-full px-6 py-4 text-lg text-foreground bg-linear-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 border-2 border-primary/30 hover:border-primary/50 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg hover:scale-[1.02] flex items-center gap-3"
             >
               <svg
                 class="w-5 h-5 text-primary"
@@ -61,7 +97,7 @@
           <li>
             <a
               href="src/admin/manage_users.html"
-              class=" w-full px-6 py-4 text-lg text-foreground bg-linear-to-r from-success/10 to-success/5 hover:from-success/20 hover:to-success/10 border-2 border-success/30 hover:border-success/50 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg hover:scale-[1.02] flex items-center gap-3"
+              class="w-full px-6 py-4 text-lg text-foreground bg-linear-to-r from-success/10 to-success/5 hover:from-success/20 hover:to-success/10 border-2 border-success/30 hover:border-success/50 rounded-xl font-semibold transition-all duration-300 shadow-md hover:shadow-lg hover:scale-[1.02] flex items-center gap-3"
             >
               <svg
                 class="w-5 h-5 text-success"
@@ -235,5 +271,23 @@
     >
       <p>&copy; 2025 Web Development Course. All rights reserved.</p>
     </footer>
+
+    <script type="module">
+      import { toggleTheme } from "/src/common/helpers.js";
+
+      window.toggleTheme = () => {
+        toggleTheme();
+        updateIcons();
+      };
+
+      function updateIcons() {
+        const isDark = document.body.classList.contains("dark");
+        document.getElementById("sun-icon").classList.toggle("hidden", !isDark);
+        document.getElementById("moon-icon").classList.toggle("hidden", isDark);
+      }
+
+      // Initialize icons on page load
+      updateIcons();
+    </script>
   </body>
 </html>

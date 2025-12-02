@@ -345,9 +345,25 @@ function renderTable(studentArray) {
 
 async function handleChangePassword(event) {
   event.preventDefault();
+  const studentId = document.getElementById("student-id-password").value.trim();
   const currentPassword = document.getElementById("current-password").value;
   const newPassword = document.getElementById("new-password").value;
   const confirmPassword = document.getElementById("confirm-password").value;
+
+  if (studentId === "") {
+    await showAlert("Student ID is required.", "error");
+    return;
+  }
+
+  // Check if the student exists in the students array
+  const student = students.find((s) => String(s.id) === String(studentId));
+  if (!student) {
+    await showAlert(
+      "Student ID not found. Please enter a valid student ID.",
+      "error"
+    );
+    return;
+  }
 
   if (newPassword !== confirmPassword) {
     await showAlert("Passwords do not match.", "error");
@@ -370,6 +386,7 @@ async function handleChangePassword(event) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          student_id: studentId,
           current_password: currentPassword,
           new_password: newPassword,
         }),
@@ -654,7 +671,6 @@ function generatePassword() {
   passwordInput.value = password;
 }
 
-
 /**
  * Load students from the API
  */
@@ -747,9 +763,9 @@ async function loadStudentsAndInitialize() {
 
 // --- Initial Page Load ---
 // Call the main async function to start the application.
-checkAdmin().then(ok => {
+checkAdmin().then((ok) => {
   if (ok) {
-    loadStudentsAndInitialize(); document.body.style.visibility = 'visible';}
-}) 
-
-
+    loadStudentsAndInitialize();
+    document.body.style.visibility = "visible";
+  }
+});
