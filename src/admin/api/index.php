@@ -209,6 +209,11 @@ function createStudent($db, $data)
         echo json_encode(['success' => false, 'error' => 'Missing required fields']);
         exit;
     }
+    if (!is_numeric($data['id'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Invalid Student id']);
+        exit;
+    }
 
     // TODO: Sanitize input data
     // Trim whitespace from all fields
@@ -222,6 +227,8 @@ function createStudent($db, $data)
         echo json_encode(['success' => false, 'error' => 'Invalid email format']);
         exit;
     }
+
+
 
     // TODO: Check if student_id or email already exists
     // Prepare and execute a SELECT query to check for duplicates
@@ -285,7 +292,19 @@ function updateStudent($db, $data)
     // If not, return error response with 400 status
     if (!isset($data['id'])) {
         http_response_code(400); // Bad Request
-        echo json_encode(['success' => false, 'error' => 'Missing student_id']);
+        echo json_encode(['success' => false, 'error' => 'Missing Student id']);
+        exit;
+    }
+    if (!is_numeric($data['id'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Student ID must be numeric']);
+        exit;
+    }
+
+    // Validate new_id if provided
+    if (isset($data['new_id']) && !is_numeric($data['new_id'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'New Student ID must be numeric']);
         exit;
     }
 
@@ -308,7 +327,7 @@ function updateStudent($db, $data)
     }
 
     // TODO: If ID is being updated, check if new ID already exists
-    if (isset($data['new_id']) && $data['new_id'] !== $student['id']) {
+    if (isset($data['new_id']) && strval($data['new_id']) !== strval($student['id'])) {
         $sql = "SELECT COUNT(*) FROM users WHERE id = :new_id";
         $stmt = $db->prepare($sql);
         $stmt->bindParam(':new_id', $data['new_id']);
@@ -389,7 +408,7 @@ function deleteStudent($db, $studentId)
     // If not, return error response with 400 status
     if (!$studentId) {
         http_response_code(400); // Bad Request
-        echo json_encode(['error' => 'Missing student_id']);
+        echo json_encode(['success' => false, 'error' => 'Missing student_id']);
         exit;
     }
 
@@ -403,7 +422,14 @@ function deleteStudent($db, $studentId)
     $student = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$student) {
         http_response_code(404); // Not Found
-        echo json_encode(['error' => 'Student not found']);
+        echo json_encode(['success' => false, 'error' => 'Student not found']);
+        exit;
+    }
+
+    // Check if the user being deleted is an admin - prevent admin deletion
+    if (isset($student['is_admin']) && intval($student['is_admin']) === 1) {
+        http_response_code(403); // Forbidden
+        echo json_encode(['success' => false, 'error' => 'Admin accounts cannot be deleted']);
         exit;
     }
 
@@ -425,7 +451,7 @@ function deleteStudent($db, $studentId)
         echo json_encode(['success' => true, 'message' => 'Student deleted successfully']);
     } else {
         http_response_code(500); // Internal Server Error
-        echo json_encode(['error' => 'Failed to delete student']);
+        echo json_encode(['success' => false, 'error' => 'Failed to delete student']);
     }
 }
 

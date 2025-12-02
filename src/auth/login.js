@@ -127,16 +127,16 @@ async function handleLogin(event) {
       body: JSON.stringify({ email, password }),
     });
 
+    const result = await response.json();
+
     // Check if response is ok (status 200-299)
     if (!response.ok) {
       displayMessage(
-        `Server error: ${response.status} - ${response.statusText}`,
+        result.message || result.error || "Login failed. Please try again.",
         "error"
       );
       return;
     }
-
-    const result = await response.json();
 
     if (result.success) {
       displayMessage("Login successful! Redirecting...", "success");

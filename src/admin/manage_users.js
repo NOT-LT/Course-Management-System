@@ -11,7 +11,7 @@
 
 // --- Global Data Store ---
 // This array will be populated with data fetched from 'students.json'.
-const API_HOST = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_HOST = import.meta.env.VITE_API_URL || "http://localhost:8000";
 console.log(API_HOST);
 let students = [];
 
@@ -143,16 +143,17 @@ function showAlert(message, type = "info") {
       type === "success"
         ? "alert-success"
         : type === "error"
-          ? "alert-error"
-          : "alert-info";
+        ? "alert-error"
+        : "alert-info";
     const iconSvg =
       type === "success"
         ? `<svg class="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
         : type === "error"
-          ? `<svg class="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
-          : `<svg class="w-8 h-8 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+        ? `<svg class="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+        : `<svg class="w-8 h-8 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
     modal.innerHTML = `
-      <div class="bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 border-2 border-${type === "success" ? "success" : type === "error" ? "error" : "info"
+      <div class="bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 border-2 border-${
+        type === "success" ? "success" : type === "error" ? "error" : "info"
       }/30 animate-in">
         <div class="flex items-start gap-4 mb-6">
           ${iconSvg}
@@ -505,7 +506,10 @@ async function handleTableClick(event) {
         renderTable(students);
         await showAlert("Student deleted successfully!", "success");
       } else {
-        await showAlert(result.message || "Failed to delete student", "error");
+        await showAlert(
+          result.error || result.message || "Failed to delete student",
+          "error"
+        );
       }
     } catch (error) {
       console.error("Error deleting student:", error);
@@ -525,9 +529,10 @@ async function handleTableClick(event) {
     const updatedData = await showEditStudentForm(student);
     if (!updatedData) return;
 
+    // Use string comparison to ensure consistency
     if (
-      updatedData.id !== student.id &&
-      students.some((s) => s.id === updatedData.id)
+      String(updatedData.id) !== String(student.id) &&
+      students.some((s) => String(s.id) === String(updatedData.id))
     ) {
       await showAlert("A student with this ID already exists.", "error");
       return;
@@ -540,22 +545,21 @@ async function handleTableClick(event) {
         email: updatedData.email,
       };
 
-      // Only include new_id if the ID actually changed
-      if (updatedData.id !== student.id) {
+      // Only include new_id if the ID actually changed (string comparison)
+      if (String(updatedData.id) !== String(student.id)) {
         updatePayload.new_id = updatedData.id;
       }
+      // Important: Do NOT include new_id if it's the same as the old ID
+      // This prevents the backend from checking for conflicts with itself
 
-      const response = await fetch(
-        `${API_HOST}/admin/api/index.php`,
-        {
-          method: "PUT",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updatePayload),
-        }
-      );
+      const response = await fetch(`${API_HOST}/admin/api/index.php`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatePayload),
+      });
 
       const result = await response.json();
       if (result.success) {
@@ -799,6 +803,4 @@ async function loadStudentsAndInitialize() {
 // --- Initial Page Load ---
 // Call the main async function to start the application.
 loadStudentsAndInitialize();
-document.body.style.visibility = 'visible';
-
-
+document.body.style.visibility = "visible";
