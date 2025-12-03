@@ -12,6 +12,7 @@
 
   3. Implement the TODOs below.
 */
+import { checkLogin, API_HOST } from "/src/common/helpers.js";
 
 // --- Global Data Store ---
 // This will hold the topics loaded from the JSON file.
@@ -142,4 +143,7 @@ async function loadAndInitialize() {
 
 // --- Initial Page Load ---
 // Call the main async function to start the application.
-loadAndInitialize();
+checkLogin().then(ok => {
+  if (ok) loadAndInitialize();
+});
+
