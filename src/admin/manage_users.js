@@ -11,7 +11,7 @@
 
 // --- Global Data Store ---
 // This array will be populated with data fetched from 'students.json'.
-import { checkAdmin, API_HOST } from "/src/common/helpers.js";
+import { checkAdmin } from "/src/common/helpers.js";
 
 let students = [];
 
