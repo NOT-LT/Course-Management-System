@@ -154,7 +154,8 @@ function renderTable() {
    * 5. Call `renderTable()` to refresh the list.
    * 6. Reset the form.
    */
-function handleAddAssignment(event) {
+
+async function handleAddAssignment(event) {
   event.preventDefault();
   if (!assignmentForm) return;
 
@@ -165,31 +166,32 @@ function handleAddAssignment(event) {
 
   if (!title) return;
 
-  if (editingAssignmentId) {
-    // update
-    const idx = assignments.findIndex((x) => x.id === editingAssignmentId);
-    if (idx !== -1) {
-      assignments[idx] = {
-        ...assignments[idx],
+  try {
+    const response = await fetch('/src/assignments/api/index.php?resource=assignments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         title,
         description,
         dueDate,
         files,
-      };
+      }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      assignments.push(result.data);
+      renderTable();
+      assignmentForm.reset();
+      // close modal via cancel button to keep modal logic in HTML
+      if (cancelBtn) cancelBtn.click();
+    } else {
+      alert('Failed to add assignment: ' + (result.message || 'Unknown error'));
     }
-    editingAssignmentId = null;
-    const addBtn = document.getElementById('add-assignment');
-    if (addBtn) addBtn.textContent = 'Add Assignment';
-  } else {
-    const id = `asg_${Date.now()}`;
-    assignments.push({ id, title, description, dueDate, files });
+  } catch (err) {
+    console.error('Error adding assignment:', err);
+    alert('Failed to add assignment. Please try again.');
   }
-
-  renderTable();
-  assignmentForm.reset();
-
-  // close modal via cancel button to keep modal logic in HTML
-  if (cancelBtn) cancelBtn.click();
 }
 
   /**
@@ -202,21 +204,37 @@ function handleAddAssignment(event) {
    * with the matching ID (in-memory only).
    * 4. Call `renderTable()` to refresh the list.
    */
-function handleTableClick(event) {
+async function handleTableClick(event) {
   if (!event) return;
 
   const deleteBtn = event.target.closest('.delete-btn');
   if (deleteBtn) {
     const id = deleteBtn.getAttribute('data-id');
-    assignments = assignments.filter((a) => a.id !== id);
-    renderTable();
+    if (!confirm('Are you sure you want to delete this assignment?')) return;
+    
+    try {
+      const response = await fetch(`/src/assignments/api/index.php?resource=assignments&id=${id}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      if (result.success) {
+        assignments = assignments.filter((a) => a.id !== id);
+        renderTable();
+      } else {
+        alert('Failed to delete assignment: ' + (result.message || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('Error deleting assignment:', err);
+      alert('Failed to delete assignment. Please try again.');
+    }
     return;
   }
 
   const editBtn = event.target.closest('.edit-btn');
   if (editBtn) {
     const id = editBtn.getAttribute('data-id');
-    startEdit(id);
+    const asg = assignments.find(a => a.id === id);
+    if (asg) openEditModal(asg);
     return;
   }
 }
@@ -295,19 +313,40 @@ function handleTableClick(event) {
   }
 
   // Save changes from the edit modal
-  function handleEditAssignment(e) {
+  async function handleEditAssignment(e) {
     e.preventDefault();
     if (!editingAssignmentId) return;
     const title = document.getElementById('edit-assignment-title')?.value.trim() || '';
     const description = document.getElementById('edit-assignment-description')?.value.trim() || '';
     const dueDate = document.getElementById('edit-assignment-due-date')?.value || '';
 
-    const idx = assignments.findIndex(a => a.id === editingAssignmentId);
-    if (idx !== -1) {
-      assignments[idx] = { ...assignments[idx], title, description, dueDate };
+    try {
+      const response = await fetch('/src/assignments/api/index.php?resource=assignments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingAssignmentId,
+          title,
+          description,
+          dueDate,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        const idx = assignments.findIndex(a => a.id === editingAssignmentId);
+        if (idx !== -1) {
+          assignments[idx] = result.data;
+        }
+        renderTable();
+        closeEditModal();
+      } else {
+        alert('Failed to update assignment: ' + (result.message || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('Error updating assignment:', err);
+      alert('Failed to update assignment. Please try again.');
     }
-    renderTable();
-    closeEditModal();
   }
 
   /**
@@ -322,9 +361,10 @@ function handleTableClick(event) {
    */
 async function loadAndInitialize() {
   try {
-    const resp = await fetch('/src/assignments/api/assignments.json');
+    const resp = await fetch('/src/assignments/api/index.php?resource=assignments');
     if (resp && resp.ok) {
-      assignments = await resp.json();
+      const result = await resp.json();
+      assignments = result.success ? result.data : [];
     } else {
       assignments = [];
     }

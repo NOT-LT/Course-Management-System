@@ -146,13 +146,34 @@ function createAssignmentArticle(assignment) {
  */
 async function loadAssignments() {
   try {
-    const res = await fetch('/src/assignments/api/assignments.json');
-    const assignments = res.ok ? await res.json() : [];
+    // Fetch from backend API instead of static JSON
+    const res = await fetch('/src/assignments/api/index.php?resource=assignments');
+    const result = await res.json();
+    const assignments = result.success ? result.data : [];
 
     if (assignmentListSection) assignmentListSection.innerHTML = '';
 
-    // Update simple stats if elements exist
-    if (totalAssignmentsEl) totalAssignmentsEl.textContent = String(assignments.length);
+    // Update statistics
+    const total = assignments.length;
+    const today = new Date();
+    const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    let dueSoon = 0;
+    let completed = 0;
+    
+    assignments.forEach(assignment => {
+      if (assignment.due_date) {
+        const dueDate = new Date(assignment.due_date);
+        if (dueDate >= today && dueDate <= sevenDaysFromNow) {
+          dueSoon++;
+        }
+      }
+      // You can add completed logic based on your status field
+    });
+
+    if (totalAssignmentsEl) totalAssignmentsEl.textContent = String(total);
+    if (totalDueSoonEl) totalDueSoonEl.textContent = String(dueSoon);
+    if (totalCompletedEl) totalCompletedEl.textContent = String(completed);
 
     for (const assignment of assignments) {
       const article = createAssignmentArticle(assignment);
@@ -160,6 +181,9 @@ async function loadAssignments() {
     }
   } catch (err) {
     console.error('Error loading assignments:', err);
+    if (assignmentListSection) {
+      assignmentListSection.innerHTML = '<p class="text-destructive text-center p-8">Error loading assignments. Please try again later.</p>';
+    }
   }
 }
 

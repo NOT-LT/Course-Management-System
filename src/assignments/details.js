@@ -155,19 +155,44 @@ function renderComments() {
  * 6. Call `renderComments()` to refresh the list.
  * 7. Clear the `newCommentText` textarea.
  */
-function handleAddComment(event) {
+async function handleAddComment(event) {
   if (event && event.preventDefault) event.preventDefault();
   if (!newCommentText) return;
   const text = newCommentText.value.trim();
   if (!text) return;
-  const comment = { author: 'Student', text };
-  currentComments.push(comment);
-  renderComments();
-  newCommentText.value = '';
 
-  // Close mobile modal if present
-  if (window.innerWidth < 768 && typeof closeCommentModal === 'function') {
-    try { closeCommentModal(); } catch (e) { /* ignore */ }
+  try {
+    // Post comment to backend API
+    const response = await fetch('/src/assignments/api/index.php?resource=comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        assignment_id: currentAssignmentId,
+        author: 'Student',
+        text: text
+      })
+    });
+
+    const result = await response.json();
+    
+    if (result.success) {
+      // Add the new comment to the list
+      currentComments.push(result.data);
+      renderComments();
+      newCommentText.value = '';
+
+      // Close mobile modal if present
+      if (window.innerWidth < 768 && typeof closeCommentModal === 'function') {
+        try { closeCommentModal(); } catch (e) { /* ignore */ }
+      }
+    } else {
+      alert('Failed to add comment: ' + (result.message || 'Unknown error'));
+    }
+  } catch (err) {
+    console.error('Error adding comment:', err);
+    alert('Failed to add comment. Please try again.');
   }
 }
 
@@ -194,16 +219,20 @@ async function initializePage() {
     return;
   }
 
-  try {
-    const [rResp, cResp] = await Promise.all([
-      fetch('/src/assignments/api/assignments.json'),
-      fetch('/src/assignments/api/comments.json')
-    ]);
-    const assignments = rResp.ok ? await rResp.json() : [];
-    const commentsObj = cResp.ok ? await cResp.json() : {};
+  currentAssignmentId = id;
 
-    const current = assignments.find((a) => a.id === id);
-    currentComments = commentsObj[id] || [];
+  try {
+    // Fetch from backend API
+    const [assignmentResp, commentsResp] = await Promise.all([
+      fetch(`/src/assignments/api/index.php?resource=assignments&id=${id}`),
+      fetch(`/src/assignments/api/index.php?resource=comments&assignment_id=${id}`)
+    ]);
+    
+    const assignmentResult = await assignmentResp.json();
+    const commentsResult = await commentsResp.json();
+
+    const current = assignmentResult.success ? assignmentResult.data : null;
+    currentComments = commentsResult.success ? commentsResult.data : [];
 
     if (current) {
       renderAssignmentDetails(current);
