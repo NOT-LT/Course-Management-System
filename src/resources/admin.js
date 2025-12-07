@@ -20,7 +20,12 @@ function initializeUI() {
 function applyInitialStyling() {
   // Apply styles to html and body
   document.documentElement.className = "overflow-x-hidden max-w-full";
+  // Preserve the 'dark' class if it exists
+  const isDark = document.body.classList.contains("dark");
   document.body.className = "min-h-screen overflow-x-hidden overscroll-x-none max-w-full relative";
+  if (isDark) {
+    document.body.classList.add("dark");
+  }
 
   // Style the header
   const header = document.querySelector('header');

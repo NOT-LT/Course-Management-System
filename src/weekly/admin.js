@@ -11,7 +11,7 @@
   3. Implement the TODOs below.
 */
 
-import { checkAdmin, API_HOST } from "/src/common/helpers.js";
+import { checkAdmin } from "/src/common/helpers.js";
 
 // --- Global Data Store ---
 // This will hold the weekly data loaded from the JSON file.

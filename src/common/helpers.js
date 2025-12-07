@@ -229,25 +229,26 @@ export function createDarkModeButton() {
 
     const updateIcon = (animate = false) => {
         const isDark = document.body.classList.contains("dark");
+        const newIcon = isDark ? sunSVG : moonSVG;
 
         if (animate) {
             icon.style.opacity = "0";
             icon.style.transform = "rotate(180deg)";
 
             setTimeout(() => {
-                const currentlyDark = document.body.classList.contains("dark");
-                icon.innerHTML = currentlyDark ? sunSVG : moonSVG;
+                icon.innerHTML = newIcon;
                 icon.style.opacity = "1";
                 icon.style.transform = "rotate(360deg)";
             }, 200);
         } else {
-            icon.innerHTML = isDark ? sunSVG : moonSVG;
+            icon.innerHTML = newIcon;
             icon.style.opacity = "1";
             icon.style.transform = "rotate(0deg)";
         }
     };
 
-    updateIcon(false);
+    // Initial icon setup after theme is checked
+    setTimeout(() => updateIcon(false), 10);
 
     button.addEventListener("click", () => {
         toggleTheme();
@@ -257,6 +258,21 @@ export function createDarkModeButton() {
     document.body.appendChild(button);
 }
 
-
-createDarkModeButton();
+// Initialize theme immediately when module loads
 themeCheck();
+
+// Ensure theme is applied when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        themeCheck();
+        createDarkModeButton();
+    });
+} else {
+    // DOM is already ready
+    createDarkModeButton();
+}
+
+// Also apply theme when the window loads (as a fallback)
+window.addEventListener('load', () => {
+    themeCheck();
+});
