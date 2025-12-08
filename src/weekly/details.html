@@ -40,6 +40,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Week Details</title>
+    <script>
+      const theme = localStorage.getItem("theme");
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    </script>
     <link rel="stylesheet" href="/src/common/styles.css">
 </head>
 

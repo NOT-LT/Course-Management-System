@@ -328,6 +328,7 @@ function renderTable(studentArray) {
     const tr = createStudentRow(student);
     studentTableBody.appendChild(tr);
   });
+  document.getElementById("number-of-students").textContent = `${studentArray.length} Students`;
 }
 
 /**
