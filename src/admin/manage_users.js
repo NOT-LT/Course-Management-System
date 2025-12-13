@@ -11,7 +11,46 @@
 
 // --- Global Data Store ---
 // This array will be populated with data fetched from 'students.json'.
-import { checkAdmin } from "/src/common/helpers.js";
+async function checkAdmin() {
+  try {
+    const response = await fetch(`../admin/api/index.php`, {
+      credentials: "include",
+    });
+
+    // If we get a 403 (Forbidden) or 401 (Unauthorized), redirect to login
+    if (response.status === 403 || response.status === 401) {
+      await redirect(
+        "Access denied.\nOnly Admin have access to this page.",
+        "/index.html"
+      );
+      return false;
+    }
+
+    const result = await response.json();
+
+    // If the API returns an access denied error, redirect to login
+    if (
+      !result.success &&
+      (result.error === "Access denied" ||
+        result.error === "Admin access required")
+    ) {
+      await redirect(
+        "Access denied.\nOnly Admin have access to this page.",
+        "/index.html"
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Authentication check failed:", error);
+    await redirect(
+      "Access denied.\nOnly Admin have access to this page.",
+      "/index.html"
+    );
+    return false;
+  }
+}
 
 let students = [];
 
@@ -328,7 +367,9 @@ function renderTable(studentArray) {
     const tr = createStudentRow(student);
     studentTableBody.appendChild(tr);
   });
-  document.getElementById("number-of-students").textContent = `${studentArray.length} Students`;
+  document.getElementById(
+    "number-of-students"
+  ).textContent = `${studentArray.length} Students`;
 }
 
 /**
@@ -378,21 +419,18 @@ async function handleChangePassword(event) {
 
   // Note: The user ID will be retrieved from the session on the server side
   try {
-    const response = await fetch(
-      `api/index.php?action=change_password`,
-      {
-        method: "POST",
-        credentials: "include", // Include session cookies
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          student_id: studentId,
-          current_password: currentPassword,
-          new_password: newPassword,
-        }),
-      }
-    );
+    const response = await fetch(`api/index.php?action=change_password`, {
+      method: "POST",
+      credentials: "include", // Include session cookies
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        student_id: studentId,
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    });
 
     const result = await response.json();
     if (result.success) {
@@ -508,13 +546,10 @@ async function handleTableClick(event) {
     const studentId = deleteBtn.getAttribute("data-id");
 
     try {
-      const response = await fetch(
-        `api/index.php?id=${studentId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`api/index.php?id=${studentId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       const result = await response.json();
       if (result.success) {
@@ -762,11 +797,28 @@ async function loadStudentsAndInitialize() {
   }
 }
 
+// ===== Jest-safe redirect stub =====
+// Define redirect function for tests if it doesn't exist
+var redirect =
+  typeof redirect !== "undefined"
+    ? redirect
+    : async function (message, url) {
+        // Do nothing in tests
+      };
+// ==================================
+
+const isTestEnv =
+  typeof process !== "undefined" &&
+  process.env &&
+  process.env.NODE_ENV === "test";
+
 // --- Initial Page Load ---
 // Call the main async function to start the application.
-checkAdmin().then((ok) => {
-  if (ok) {
-    loadStudentsAndInitialize();
-    document.body.style.visibility = "visible";
-  }
-});
+if (!isTestEnv) {
+  checkAdmin().then((ok) => {
+    if (ok) {
+      loadStudentsAndInitialize();
+      document.body.style.visibility = "visible";
+    }
+  });
+}

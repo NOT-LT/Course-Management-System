@@ -1,5 +1,3 @@
-import {  API_HOST } from "/src/common/helpers.js";
-
 /*
   Requirement: Add client-side validation to the login form.
 
