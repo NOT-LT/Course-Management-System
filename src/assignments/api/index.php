@@ -35,6 +35,14 @@
  * Response Format: JSON
  */
 
+// Start session for authentication
+session_start();
+
+// Store session data for user tracking
+if (!isset($_SESSION['user_id'])) {
+    $_SESSION['user_id'] = null;
+}
+
 // ============================================================================
 // HEADERS AND CORS CONFIGURATION
 // ============================================================================
