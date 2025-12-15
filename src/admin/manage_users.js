@@ -11,6 +11,165 @@
 
 // --- Global Data Store ---
 // This array will be populated with data fetched from 'students.json'.
+async function redirect(
+  message = "Please login first to access to this page.",
+  href = "/src/auth/login.html"
+) {
+  await showAlert(message, "Error");
+  setTimeout(() => {
+    window.location.href = href;
+  }, 10);
+}
+
+async function checkAdmin() {
+  try {
+    const response = await fetch(`../admin/api/index.php`, {
+      credentials: "include",
+    });
+
+    // If we get a 403 (Forbidden) or 401 (Unauthorized), redirect to login
+    if (response.status === 403 || response.status === 401) {
+      await redirect(
+        "Access denied.\nOnly Admin have access to this page.",
+        "/index.html"
+      );
+      return false;
+    }
+
+    const result = await response.json();
+
+    // If the API returns an access denied error, redirect to login
+    if (
+      !result.success &&
+      (result.error === "Access denied" ||
+        result.error === "Admin access required")
+    ) {
+      await redirect(
+        "Access denied.\nOnly Admin have access to this page.",
+        "/index.html"
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Authentication check failed:", error);
+    await redirect(
+      "Access denied.\nOnly Admin have access to this page.",
+      "/index.html"
+    );
+    return false;
+  }
+}
+
+const RED_X_ICON = `
+<svg width="120" height="120" viewBox="0 0 120 120">
+  <circle cx="60" cy="60" r="50" fill="#ff4a4a"/>
+  <path d="M40 40 L80 80 M80 40 L40 80"
+        stroke="white"
+        stroke-width="12"
+        stroke-linecap="round"/>
+</svg>
+`;
+
+const GREEN_CHECK_ICON = `
+<svg width="120" height="120" viewBox="0 0 120 120">
+  <circle cx="60" cy="60" r="50" fill="#4ade80"/>
+  <path d="M35 65 L55 85 L85 45"
+        stroke="white"
+        stroke-width="12"
+        stroke-linecap="round"
+        fill="none"/>
+</svg>
+`;
+
+function showAlert(message, title = "Error") {
+  return new Promise((resolve) => {
+    /* ---------------- BACKDROP ---------------- */
+    const backdrop = document.createElement("div");
+    backdrop.className =
+      "fixed inset-0 z-50 flex items-center justify-center " +
+      "bg-black/60 backdrop-blur-xl animate-fadeIn p-6";
+
+    /* ---------------- CARD (LIGHT + DARK MODE) ---------------- */
+    const card = document.createElement("div");
+    card.className =
+      "relative max-w-sm w-full rounded-[2rem] px-8 pt-10 pb-8 animate-scaleIn text-center " +
+      "border shadow-2xl backdrop-blur-2xl " +
+      "bg-white/90 text-gray-900 border-gray-300 " + // LIGHT MODE
+      "dark:bg-white/5 dark:text-white dark:border-white/10"; // DARK MODE
+
+    /* ---------------- ICON WITH GLOW ---------------- */
+    const iconWrap = document.createElement("div");
+    iconWrap.className =
+      "relative flex justify-center items-center w-full mb-6 bottom-5";
+
+    // Glow layer
+    const glow = document.createElement("div");
+    glow.className =
+      "absolute w-32 h-32 rounded-full blur-3xl opacity-70 " +
+      "bg-red-500/60 dark:bg-red-500/60";
+
+    // Actual icon
+    const icon = document.createElement("div");
+    icon.className = "relative z-10";
+    if (title.toLowerCase() === "success") {
+      icon.innerHTML = GREEN_CHECK_ICON;
+    } else {
+      icon.innerHTML = RED_X_ICON;
+    }
+
+    iconWrap.appendChild(glow);
+    iconWrap.appendChild(icon);
+
+    /* ---------------- TITLE ---------------- */
+    const heading = document.createElement("h2");
+    heading.className =
+      "text-2xl font-bold tracking-widest mb-2 " +
+      "text-gray-900 dark:text-white";
+    heading.textContent = title;
+
+    /* ---------------- DESCRIPTION ---------------- */
+    const desc = document.createElement("p");
+    desc.className =
+      "text-sm leading-relaxed mb-8 whitespace-pre-line " +
+      "text-gray-700 dark:text-gray-300";
+    desc.textContent = message;
+
+    /* ---------------- BUTTON ---------------- */
+    const button = document.createElement("button");
+    button.className =
+      "w-full py-3 rounded-2xl font-semibold tracking-wide transition-all shadow-lg " +
+      "active:scale-95 " +
+      "bg-black text-gray-100 border border-gray-300 hover:bg-black/80 " + // LIGHT
+      "dark:bg-white/10 dark:text-white dark:border-white/20 dark:hover:bg-white/20"; // DARK
+    button.textContent = "OK";
+
+    /* ---------------- BUILD TREE ---------------- */
+    card.appendChild(iconWrap);
+    card.appendChild(heading);
+    card.appendChild(desc);
+    card.appendChild(button);
+
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    /* ---------------- CLOSE HANDLERS ---------------- */
+    const close = () => {
+      backdrop.classList.add("animate-fadeOut");
+      setTimeout(() => {
+        backdrop.remove();
+        resolve();
+      }, 150);
+    };
+
+    button.onclick = close;
+    backdrop.onclick = (e) => {
+      if (e.target === backdrop) close();
+    };
+  });
+}
+
 let students = [];
 
 // --- Element Selections ---
@@ -34,6 +193,7 @@ const searchInput = document.getElementById("search-input");
 
 // TODO: Select all table header (th) elements in thead.
 const tableHeaders = document.querySelectorAll("#student-table thead th");
+const numberOfStudents = document.getElementById("number-of-students");
 
 // Default Password Input and Generate Button
 const defaultPasswordInput = document.getElementById("default-password");
@@ -77,100 +237,6 @@ function showConfirm(message) {
         document.body.removeChild(modal);
         resolve(false);
       }
-    };
-  });
-}
-
-//prompt
-function showPrompt(message, defaultValue = "") {
-  return new Promise((resolve) => {
-    const modal = document.createElement("div");
-    modal.className =
-      "fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in";
-    modal.innerHTML = `
-      <div class="bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 border-2 border-primary/30 animate-in">
-        <div class="flex items-center gap-3 mb-6">
-          <svg class="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-          </svg>
-          <h3 class="text-xl font-bold text-foreground">Enter Value</h3>
-        </div>
-        <label class="label mb-3 text-sm font-semibold">${message}</label>
-        <input type="text" class="input mb-8 shadow-sm hover:shadow-md focus:shadow-lg transition-all" value="${defaultValue}" id="prompt-input">
-        <div class="flex gap-3 justify-end">
-          <button class="cancel-btn btn btn-outline shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105">Cancel</button>
-          <button class="ok-btn btn btn-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105">OK</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    const input = modal.querySelector("#prompt-input");
-    input.focus();
-    input.select();
-
-    const handleOk = () => {
-      const value = input.value.trim();
-      document.body.removeChild(modal);
-      resolve(value || null);
-    };
-
-    modal.querySelector(".cancel-btn").onclick = () => {
-      document.body.removeChild(modal);
-      resolve(null);
-    };
-    modal.querySelector(".ok-btn").onclick = handleOk;
-    input.onkeydown = (e) => {
-      if (e.key === "Enter") handleOk();
-      if (e.key === "Escape") {
-        document.body.removeChild(modal);
-        resolve(null);
-      }
-    };
-  });
-}
-
-//alert
-function showAlert(message, type = "info") {
-  return new Promise((resolve) => {
-    const modal = document.createElement("div");
-    modal.className =
-      "fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in";
-    const alertClass =
-      type === "success"
-        ? "alert-success"
-        : type === "error"
-        ? "alert-error"
-        : "alert-info";
-    const iconSvg =
-      type === "success"
-        ? `<svg class="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
-        : type === "error"
-        ? `<svg class="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
-        : `<svg class="w-8 h-8 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
-    modal.innerHTML = `
-      <div class="bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 border-2 border-${
-        type === "success" ? "success" : type === "error" ? "error" : "info"
-      }/30 animate-in">
-        <div class="flex items-start gap-4 mb-6">
-          ${iconSvg}
-          <div class="alert ${alertClass} flex-1">${message}</div>
-        </div>
-        <div class="flex justify-end">
-          <button class="ok-btn btn btn-primary shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105">OK</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    const closeModal = () => {
-      document.body.removeChild(modal);
-      resolve();
-    };
-
-    modal.querySelector(".ok-btn").onclick = closeModal;
-    modal.onclick = (e) => {
-      if (e.target === modal) closeModal();
     };
   });
 }
@@ -325,6 +391,9 @@ function renderTable(studentArray) {
     const tr = createStudentRow(student);
     studentTableBody.appendChild(tr);
   });
+  document.getElementById(
+    "number-of-students"
+  ).textContent = `${studentArray.length} Students`;
 }
 
 /**
@@ -339,11 +408,28 @@ function renderTable(studentArray) {
  * 4. If validation passes, show an alert: "Password updated successfully!"
  * 5. Clear all three password input fields.
  */
+
 async function handleChangePassword(event) {
   event.preventDefault();
+  const studentId = document.getElementById("student-id-password").value.trim();
   const currentPassword = document.getElementById("current-password").value;
   const newPassword = document.getElementById("new-password").value;
   const confirmPassword = document.getElementById("confirm-password").value;
+
+  if (studentId === "") {
+    await showAlert("Student ID is required.", "error");
+    return;
+  }
+
+  // Check if the student exists in the students array
+  const student = students.find((s) => String(s.id) === String(studentId));
+  if (!student) {
+    await showAlert(
+      "Student ID not found. Please enter a valid student ID.",
+      "error"
+    );
+    return;
+  }
 
   if (newPassword !== confirmPassword) {
     await showAlert("Passwords do not match.", "error");
@@ -355,10 +441,43 @@ async function handleChangePassword(event) {
     return;
   }
 
-  await showAlert("Password updated successfully!", "success");
-  document.getElementById("current-password").value = "";
-  document.getElementById("new-password").value = "";
-  document.getElementById("confirm-password").value = "";
+  // Note: The user ID will be retrieved from the session on the server side
+  try {
+    const response = await fetch(`api/index.php?action=change_password`, {
+      method: "POST",
+      credentials: "include", // Include session cookies
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        student_id: studentId,
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      await showAlert("Password updated successfully!", "success");
+      document.getElementById("current-password").value = "";
+      document.getElementById("new-password").value = "";
+      document.getElementById("confirm-password").value = "";
+      document.getElementById("student-id-password").value = "";
+
+      // Close the modal
+      const changePasswordDetails = document.getElementById(
+        "change-password-details"
+      );
+      if (changePasswordDetails) {
+        changePasswordDetails.removeAttribute("open");
+      }
+    } else {
+      await showAlert(result.message || "Failed to update password", "error");
+    }
+  } catch (error) {
+    console.error("Error changing password:", error);
+    await showAlert("An error occurred while changing the password.", "error");
+  }
 }
 
 /**
@@ -395,18 +514,45 @@ async function handleAddStudent(event) {
     await showAlert("Student with the same email already exists.", "error");
     return;
   }
-  const newStudent = { name, id, email, password: defaultPassword };
-  students.push(newStudent);
-  renderTable(students);
-  document.getElementById("student-name").value = "";
-  document.getElementById("student-id").value = "";
-  document.getElementById("student-email").value = "";
-  document.getElementById("default-password").value = "";
+  try {
+    const response = await fetch(`api/index.php`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: id,
+        name: name,
+        email: email,
+        password: defaultPassword,
+      }),
+    });
 
-  const details = document.getElementById("add-student-details");
-  if (details) details.removeAttribute("open");
+    const result = await response.json();
+    if (result.success) {
+      const newStudent = { name, id, email };
+      students.push(newStudent);
+      renderTable(students);
+      document.getElementById("student-name").value = "";
+      document.getElementById("student-id").value = "";
+      document.getElementById("student-email").value = "";
+      document.getElementById("default-password").value = "";
 
-  await showAlert("Student added successfully!", "success");
+      const details = document.getElementById("add-student-details");
+      if (details) details.removeAttribute("open");
+
+      await showAlert("Student added successfully!", "success");
+    } else {
+      await showAlert(
+        result.error || result.message || "Failed to add student",
+        "error"
+      );
+    }
+  } catch (error) {
+    console.error("Error adding student:", error);
+    await showAlert("An error occurred while adding the student.", "error");
+  }
 }
 
 /**
@@ -431,31 +577,91 @@ async function handleTableClick(event) {
     if (!confirmed) return;
 
     const studentId = deleteBtn.getAttribute("data-id");
-    students = students.filter((student) => student.id !== studentId);
-    renderTable(students);
-    await showAlert("Student deleted successfully!", "success");
+
+    try {
+      const response = await fetch(`api/index.php?id=${studentId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        students = students.filter(
+          (student) => String(student.id) !== String(studentId)
+        );
+        renderTable(students);
+        await showAlert("Student deleted successfully!", "success");
+      } else {
+        await showAlert(
+          result.error || result.message || "Failed to delete student",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      await showAlert("An error occurred while deleting the student.", "error");
+    }
   }
 
   if (editBtn) {
     const studentId = editBtn.getAttribute("data-id");
-    const student = students.find((s) => s.id === studentId);
+    const student = students.find((s) => String(s.id) === String(studentId));
+
+    if (!student) {
+      await showAlert("Student not found.", "error");
+      return;
+    }
 
     const updatedData = await showEditStudentForm(student);
     if (!updatedData) return;
 
+    // Use string comparison to ensure consistency
     if (
-      updatedData.id !== student.id &&
-      students.some((s) => s.id === updatedData.id)
+      String(updatedData.id) !== String(student.id) &&
+      students.some((s) => String(s.id) === String(updatedData.id))
     ) {
       await showAlert("A student with this ID already exists.", "error");
       return;
     }
 
-    student.name = updatedData.name;
-    student.id = updatedData.id;
-    student.email = updatedData.email;
-    renderTable(students);
-    await showAlert("Student updated successfully!", "success");
+    try {
+      const updatePayload = {
+        id: student.id, // Old ID to identify the record
+        name: updatedData.name,
+        email: updatedData.email,
+      };
+
+      // Only include new_id if the ID actually changed (string comparison)
+      if (String(updatedData.id) !== String(student.id)) {
+        updatePayload.new_id = updatedData.id;
+      }
+      // Important: Do NOT include new_id if it's the same as the old ID
+      // This prevents the backend from checking for conflicts with itself
+
+      const response = await fetch(`api/index.php`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatePayload),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Reload students from server to get fresh data
+        await loadStudents();
+        await showAlert("Student updated successfully!", "success");
+      } else {
+        await showAlert(
+          result.error || result.message || "Failed to update student",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error("Error updating student:", error);
+      await showAlert("An error occurred while updating the student.", "error");
+    }
   }
 }
 
@@ -535,6 +741,63 @@ function generatePassword() {
 }
 
 /**
+ * Load students from the API
+ */
+async function loadStudents() {
+  try {
+    const response = await fetch(`api/index.php`, {
+      credentials: "include",
+    });
+
+    // Check for authentication errors
+    if (response.status === 403 || response.status === 401) {
+      await showAlert(
+        "Your session has expired. Please log in again.",
+        "error"
+      );
+      setTimeout(() => {
+        window.location.href = "../../index.html";
+      }, 2000);
+      return;
+    }
+
+    if (!response.ok) throw new Error("Network response was not ok");
+    const result = await response.json();
+    if (result.success) {
+      numberOfStudents.textContent = result.data.length + " Students";
+      students = result.data;
+      renderTable(students);
+    } else {
+      // If access denied, redirect to login
+      if (
+        result.error === "Access denied" ||
+        result.error === "Admin access required"
+      ) {
+        await showAlert(
+          "Access denied. Only Admin have access to this page.",
+          "error"
+        );
+        setTimeout(() => {
+          window.location.href = "../../index.html";
+        }, 2000);
+        return;
+      }
+      console.error("Error loading students:", result.message);
+      await showAlert(
+        "Failed to load students: " + (result.message || "Unknown error"),
+        "error"
+      );
+    }
+  } catch (error) {
+    console.error("Error loading students:", error);
+    await showAlert(
+      "Error loading students. Please check the console.",
+      "error"
+    );
+  }
+}
+
+/**
  * TODO: Implement the loadStudentsAndInitialize function.
  * This function needs to be 'async'.
  * It should:
@@ -551,14 +814,8 @@ function generatePassword() {
  * - "click" on each header in `tableHeaders` -> `handleSort`
  */
 async function loadStudentsAndInitialize() {
-  try {
-    const response = await fetch("api/students.json");
-    if (!response.ok) throw new Error("Network response was not ok");
-    students = await response.json();
-    renderTable(students);
-  } catch (error) {
-    console.error("Error loading students:", error);
-  }
+  // Show the page after successful authentication
+  await loadStudents();
 
   // Set up event listeners
   changePasswordForm.addEventListener("submit", handleChangePassword);
@@ -573,6 +830,18 @@ async function loadStudentsAndInitialize() {
   }
 }
 
+const isTestEnv =
+  typeof process !== "undefined" &&
+  process.env &&
+  process.env.NODE_ENV === "test";
+
 // --- Initial Page Load ---
 // Call the main async function to start the application.
-loadStudentsAndInitialize();
+if (!isTestEnv) {
+  checkAdmin().then((ok) => {
+    if (ok) {
+      loadStudentsAndInitialize();
+      document.body.style.visibility = "visible";
+    }
+  });
+}

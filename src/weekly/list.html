@@ -4,41 +4,64 @@
   Instructions:
   This page is a read-only view for students to see the plan for all weeks.
   Each week should link to its dedicated detail page.
+
+  TODO: Add meta tags for charset and viewport.
+  TODO: Add a title, e.g., "Weekly Course Breakdown".
+  TODO: Link to your CSS framework or stylesheet.
+  TODO: Create a 'header' with a main heading ('h1') "Weekly Course Breakdown".
+  TODO: Create the 'main' content area.
+  TODO: Create a 'section' to contain the list of weeks.
+  TODO: Add 2-3 dummy weekly entries using the structure below.
+  TODO: Use an 'article' element for each week to group its content semantically.
+  TODO: Add a heading ('h2') for the week's title (e.g., "Week 1: Introduction to HTML").
+  TODO: Add a paragraph ('p') to display the start date, e.g., "Starts on: YYYY-MM-DD".
+  TODO: Add a paragraph ('p') for a brief description of the week.
+  TODO: Add an anchor tag ('a') that links to the detail page.
+       - For now, the 'href' can be "week-detail.html".
+       - The link text should be "View Details & Discussion".
+  TODO: Create a second 'article' for another week.
+  TODO: Add a heading, a paragraph for the start date, a paragraph for the description, and an anchor tag linking to "weebutk-detail.html".
 -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- TODO: Add meta tags for charset and viewport. -->
-    
-    <!-- TODO: Add a title, e.g., "Weekly Course Breakdown". -->
-
-    <!-- TODO: Link to your CSS framework or stylesheet. -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Course Breakdown</title>
+    <script>
+      const theme = localStorage.getItem("theme");
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    </script>
+    <script type="module">
+        // Import and expose helpers to global scope for compatibility
+        import { checkLogin } from "/src/common/helpers.js";
+        window.checkLogin = checkLogin;
+    </script>
+    <link rel="stylesheet" href="/src/common/styles.css">
+    <script type="module">
+        // Import and expose helpers to global scope for compatibility
+        import { checkLogin, showAlert } from "/src/common/helpers.js";
+        window.checkLogin = checkLogin;
+        window.showAlert = showAlert;
+    </script>
 </head>
-<body>
+<body class="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
 
-    <!-- TODO: Create a 'header' with a main heading ('h1') "Weekly Course Breakdown". -->
+    <header class="bg-primary-gradient text-primary-foreground py-12 shadow-xl">
+        <div class="container mx-auto px-6">
+            <h1 class="text-4xl font-bold">Weekly Course Breakdown</h1>
+        </div>
+    </header>
 
-    <!-- TODO: Create the 'main' content area. -->
-        <!-- TODO: Create a 'section' to contain the list of weeks. -->
-            <!-- TODO: Add 2-3 dummy weekly entries using the structure below. -->
+    <main class="container mx-auto px-6 py-8">
+        <section id="week-list-section" class="space-y-6">
+            <!-- Content will be loaded dynamically -->
+        </section>
+    </main>
 
-            <!-- Example Week 1: -->
-            <!-- TODO: Use an 'article' element for each week to group its content semantically. -->
-                <!-- TODO: Add a heading ('h2') for the week's title (e.g., "Week 1: Introduction to HTML"). -->
-                <!-- TODO: Add a paragraph ('p') to display the start date, e.g., "Starts on: YYYY-MM-DD". -->
-                <!-- TODO: Add a paragraph ('p') for a brief description of the week. -->
-                <!-- TODO: Add an anchor tag ('a') that links to the detail page. 
-                     - For now, the 'href' can be "week-detail.html".
-                     - The link text should be "View Details & Discussion". -->
-            <!-- End of article. -->
-
-            <!-- Example Week 2: -->
-            <!-- TODO: Create a second 'article' for another week. -->
-                <!-- TODO: Add a heading, a paragraph for the start date, a paragraph for the description, and an anchor tag linking to "week-detail.html". -->
-            <!-- End of article. -->
-
-        <!-- End of weekly list section. -->
-    <!-- End of main. -->
-
+    <script src="/src/weekly/list.js" type="module"></script>
 </body>
 </html>

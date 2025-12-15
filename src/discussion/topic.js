@@ -18,6 +18,7 @@
 
 
   
+import { checkLogin } from "/src/common/helpers.js";
 
 // --- Global Data Store ---
 let currentTopicId = null;
@@ -196,4 +197,6 @@ async function initializePage() {
 }
 
 // --- Initial Page Load ---
-initializePage();
+checkLogin().then(ok => {
+  if (ok) initializePage();
+})

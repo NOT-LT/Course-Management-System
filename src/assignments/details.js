@@ -16,6 +16,7 @@
 
   3. Implement the TODOs below.
 */
+import { checkLogin } from "/src/common/helpers.js";
 
 // --- Global Data Store ---
 // These will hold the data related to *this* assignment.
@@ -24,6 +25,21 @@ let currentComments = [];
 
 // --- Element Selections ---
 // TODO: Select all the elements you added IDs for in step 2.
+const commentModal = document.getElementById('comment-modal') ;
+const commentModalContent =  document.getElementById('comment-modal-content') ;
+const commentModalOverlay = document.getElementById('comment-modal-overlay') ;
+const showCommentBtnMobile = document.getElementById('show-comment-btn-mobile') ;
+const closeCommentModalBtn = document.getElementById('close-comment-modal-btn') ;
+const cancelCommentBtn = document.getElementById('cancel-comment-btn') ;
+const commentForm = document.getElementById('comment-form') ;
+const commentFormMobileWrapper = document.getElementById('comment-form-mobile-wrapper') ;
+
+const assignmentTitle = document.getElementById('assignment-title') ;
+const assignmentDueDate = document.getElementById('assignment-due-date') ;
+const assignmentDescription = document.getElementById('assignment-description') ;
+const assignmentFilesList = document.getElementById('assignment-files-list') ;
+const newCommentText = document.getElementById('new-comment-text') ;
+const commentList = document.getElementById('comment-list') ;
 
 // --- Functions ---
 
@@ -36,6 +52,10 @@ let currentComments = [];
  */
 function getAssignmentIdFromURL() {
   // ... your implementation here ...
+
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  return urlParams.get('id');
 }
 
 /**
@@ -49,7 +69,23 @@ function getAssignmentIdFromURL() {
  * `<li><a href="#">...</a></li>` for each file in the assignment's 'files' array.
  */
 function renderAssignmentDetails(assignment) {
-  // ... your implementation here ...
+  if (!assignment) return;
+  if (assignmentTitle) assignmentTitle.textContent = assignment.title || '';
+  if (assignmentDueDate) assignmentDueDate.textContent = assignment.due_date ? `Due: ${assignment.due_date}` : 'No due date';
+  if (assignmentDescription) assignmentDescription.textContent = assignment.description || '';
+
+  if (assignmentFilesList) {
+    assignmentFilesList.innerHTML = '';
+    const files = Array.isArray(assignment.files) ? assignment.files : [];
+    files.forEach((f) => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.textContent = f;
+      a.className = 'text-primary hover:underline';
+      li.appendChild(a);
+      assignmentFilesList.appendChild(li);
+    });
+  }
 }
 
 /**
@@ -58,7 +94,37 @@ function renderAssignmentDetails(assignment) {
  * It should return an <article> element matching the structure in `details.html`.
  */
 function createCommentArticle(comment) {
-  // ... your implementation here ...
+  const article = document.createElement('article');
+  article.className = 'bg-card border border-border/50 rounded-xl p-6 hover:border-info/30 hover:shadow-md transition-all duration-200';
+
+  const outer = document.createElement('div');
+  outer.className = 'flex items-start gap-4';
+
+  const avatarWrap = document.createElement('div');
+  avatarWrap.className = 'mt-1 p-3 bg-info/10 rounded-full';
+  avatarWrap.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-info" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>`;
+
+  const contentWrap = document.createElement('div');
+  contentWrap.className = 'flex-1 min-w-0';
+
+  const p = document.createElement('p');
+  p.className = 'ml-0 text-foreground leading-relaxed mb-3';
+  p.textContent = comment.text || '';
+
+  const footer = document.createElement('footer');
+  footer.className = 'ml-0 flex items-center gap-4 text-sm justify-between';
+  const authorSpan = document.createElement('span');
+  authorSpan.textContent = comment.author || 'Student';
+  authorSpan.className = 'font-semibold text-accent';
+  const dateSpan = document.createElement('span');
+  dateSpan.textContent = comment.date || 'Just now';
+  dateSpan.className = 'text-muted-foreground text-xs';
+
+  footer.append(authorSpan, dateSpan);
+  contentWrap.append(p, footer);
+  outer.append(avatarWrap, contentWrap);
+  article.appendChild(outer);
+  return article;
 }
 
 /**
@@ -70,7 +136,11 @@ function createCommentArticle(comment) {
  * append the resulting <article> to `commentList`.
  */
 function renderComments() {
-  // ... your implementation here ...
+  if (!commentList) return;
+  commentList.innerHTML = '';
+  currentComments.forEach((c) => {
+    commentList.appendChild(createCommentArticle(c));
+  });
 }
 
 /**
@@ -86,8 +156,45 @@ function renderComments() {
  * 6. Call `renderComments()` to refresh the list.
  * 7. Clear the `newCommentText` textarea.
  */
-function handleAddComment(event) {
-  // ... your implementation here ...
+async function handleAddComment(event) {
+  if (event && event.preventDefault) event.preventDefault();
+  if (!newCommentText) return;
+  const text = newCommentText.value.trim();
+  if (!text) return;
+
+  try {
+    // Post comment to backend API
+    const response = await fetch('api/index.php?resource=comments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        assignment_id: currentAssignmentId,
+        author: 'Student',
+        text: text
+      })
+    });
+
+    const result = await response.json();
+    
+    if (result.success) {
+      // Add the new comment to the list
+      currentComments.push(result.data);
+      renderComments();
+      newCommentText.value = '';
+
+      // Close mobile modal if present
+      if (window.innerWidth < 768 && typeof closeCommentModal === 'function') {
+        try { closeCommentModal(); } catch (e) { /* ignore */ }
+      }
+    } else {
+      alert('Failed to add comment: ' + (result.message || 'Unknown error'));
+    }
+  } catch (err) {
+    console.error('Error adding comment:', err);
+    alert('Failed to add comment. Please try again.');
+  }
 }
 
 /**
@@ -107,8 +214,39 @@ function handleAddComment(event) {
  * 7. If the assignment is not found, display an error.
  */
 async function initializePage() {
-  // ... your implementation here ...
+  const id = getAssignmentIdFromURL();
+  if (!id) {
+    if (assignmentTitle) assignmentTitle.textContent = 'Assignment not found.';
+    return;
+  }
+  currentAssignmentId = id;
+
+  try {
+    const [assignmentResp, commentsResp] = await Promise.all([
+      fetch(`api/index.php?resource=assignments&id=${id}`),
+      fetch(`api/index.php?resource=comments&assignment_id=${id}`)
+    ]);
+    
+    const assignmentResult = await assignmentResp.json();
+    const commentsResult = await commentsResp.json();
+
+    const current = assignmentResult.success ? assignmentResult.data : null;
+    currentComments = commentsResult.success ? commentsResult.data : [];
+
+    if (current) {
+      renderAssignmentDetails(current);
+      renderComments();
+      if (commentForm) commentForm.addEventListener('submit', handleAddComment);
+    } else {
+      if (assignmentTitle) assignmentTitle.textContent = 'Assignment not found.';
+    }
+  } catch (err) {
+    console.error('Error initializing assignment details:', err);
+    if (assignmentTitle) assignmentTitle.textContent = 'Error loading assignment.';
+  }
 }
 
 // --- Initial Page Load ---
-initializePage();
+checkLogin().then(ok => {
+  if (ok) initializePage();
+});

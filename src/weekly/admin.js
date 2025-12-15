@@ -11,14 +11,25 @@
   3. Implement the TODOs below.
 */
 
+const checkLogin = (typeof window !== 'undefined' && window.checkLogin) || (() => Promise.resolve(true));
+
 // --- Global Data Store ---
 // This will hold the weekly data loaded from the JSON file.
 let weeks = [];
+let editingWeekId = null; // Track which week is being edited
 
 // --- Element Selections ---
 // TODO: Select the week form ('#week-form').
+const WeekForm = document.querySelector('#week-form');
 
 // TODO: Select the weeks table body ('#weeks-tbody').
+const WeekTbody = document.querySelector('#weeks-tbody');
+
+// Modal elements
+const editModal = document.querySelector('#edit-modal');
+const editForm = document.querySelector('#edit-form');
+const closeModalBtn = document.querySelector('#close-modal');
+const cancelEditBtn = document.querySelector('#cancel-edit');
 
 // --- Functions ---
 
@@ -33,7 +44,29 @@ let weeks = [];
  * - A "Delete" button with class "delete-btn" and `data-id="${id}"`.
  */
 function createWeekRow(week) {
-  // ... your implementation here ...
+  const Week = document.createElement('tr');
+  Week.className = 'border-b border-border hover:bg-muted/30 transition-colors';
+
+  const title = document.createElement('td');
+  title.className = 'px-6 py-4 text-foreground';
+  title.textContent = week.title;
+
+  const description = document.createElement('td');
+  description.className = 'px-6 py-4 text-foreground';
+  description.textContent = week.description;
+
+  const actionTd = document.createElement("td");
+  actionTd.className = 'px-6 py-4 whitespace-nowrap';
+  actionTd.innerHTML = `
+      <button class="edit-btn px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors mr-2" data-id="${week.id}">Edit</button>
+      <button class="delete-btn px-4 py-2 bg-destructive text-white rounded-lg hover:bg-destructive/90 transition-colors" data-id="${week.id}">Delete</button>
+  `;
+
+  Week.appendChild(title);
+  Week.appendChild(description);
+  Week.appendChild(actionTd);
+
+  return Week;
 }
 
 /**
@@ -45,7 +78,12 @@ function createWeekRow(week) {
  * append the resulting <tr> to `weeksTableBody`.
  */
 function renderTable() {
-  // ... your implementation here ...
+  WeekTbody.innerHTML = '';
+
+  for (let week of weeks) {
+    const row = createWeekRow(week);
+    WeekTbody.appendChild(row);
+  }
 }
 
 /**
@@ -61,8 +99,45 @@ function renderTable() {
  * 6. Call `renderTable()` to refresh the list.
  * 7. Reset the form.
  */
-function handleAddWeek(event) {
-  // ... your implementation here ...
+async function handleAddWeek(event) {
+  event.preventDefault();
+
+  const title = document.querySelector('#week-title').value;
+  const startDate = document.querySelector('#week-start-date').value;
+  const description = document.querySelector('#week-description').value;
+
+  if (!title.trim() || !startDate || !description.trim()) {
+    alert('Please fill in all required fields with valid content.');
+    return;
+  }
+
+
+  const linksValue = document.querySelector('#week-links').value;
+  const links = linksValue.split('\n').filter(link => link.trim() !== '');
+
+  try {
+    const response = await fetch(`api/index.php?resource=weeks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: "include",
+      body: JSON.stringify({
+        title: title,
+        start_date: startDate,
+        description: description,
+        links: links
+      })
+    });
+    const result = await response.json();
+    if (result.success) {
+      await loadAndInitialize(); // reload weeks from API
+      WeekForm.reset();
+    } else {
+      alert('Failed to add week: ' + (result.error || result.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error adding week:', error);
+    alert('Error adding week. Check the console for details.');
+  }
 }
 
 /**
@@ -75,8 +150,129 @@ function handleAddWeek(event) {
  * with the matching ID (in-memory only).
  * 4. Call `renderTable()` to refresh the list.
  */
-function handleTableClick(event) {
-  // ... your implementation here ...
+async function handleTableClick(event) {
+  if (event.target.classList.contains('delete-btn')) {
+    const weekId = event.target.getAttribute('data-id');
+    if (confirm('Are you sure you want to delete this week?')) {
+      const success = await deleteWeekFromAPI(weekId);
+      if (success) {
+        await loadAndInitialize(); // reload weeks from API
+      } else {
+        alert('Failed to delete week.');
+      }
+    }
+  }
+
+  if (event.target.classList.contains('edit-btn')) {
+    const weekId = event.target.getAttribute('data-id');
+    openEditModal(weekId);
+  }
+}
+
+async function deleteWeekFromAPI(weekId) {
+  const response = await fetch(`api/index.php?resource=weeks&id=${weekId}`, {
+    method: 'DELETE',
+    credentials: "include"
+  });
+  const result = await response.json();
+  return result.success;
+}
+
+/**
+ * Open the edit modal and populate it with week data
+ */
+function openEditModal(weekId) {
+  const week = weeks.find(w => w.id == weekId); // Use == for type coercion
+  if (week) {
+    editingWeekId = weekId;
+    document.querySelector('#edit-week-title').value = week.title;
+    document.querySelector('#edit-week-start-date').value = week.startDate;
+    document.querySelector('#edit-week-description').value = week.description;
+    document.querySelector('#edit-week-links').value = week.links.join('\n');
+    document.body.style.overflow = 'hidden';
+    editModal.classList.remove('hidden');
+    editModal.classList.add('flex');
+    setTimeout(() => {
+      document.querySelector('#modal-content').classList.remove('scale-95', 'opacity-0');
+      document.querySelector('#modal-content').classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+}
+
+/**
+ * Close the edit modal
+ */
+function closeEditModal() {
+  document.querySelector('#modal-content').classList.add('scale-95', 'opacity-0');
+  document.querySelector('#modal-content').classList.remove('scale-100', 'opacity-100');
+
+  setTimeout(() => {
+    editModal.classList.add('hidden');
+    editModal.classList.remove('flex');
+    editingWeekId = null;
+    editForm.reset();
+
+    document.body.style.overflow = '';
+  }, 300);
+}
+
+/**
+ * Handle edit form submission
+ */
+async function handleEditSubmit(event) {
+  event.preventDefault();
+
+  const weekIndex = weeks.findIndex(w => w.id == editingWeekId);
+  if (weekIndex === -1) return;
+
+  const linksValue = document.querySelector('#edit-week-links').value;
+  const links = linksValue.split('\n').filter(link => link.trim() !== '');
+
+  // Prepare updated week
+  const updatedWeek = {
+    ...weeks[weekIndex],
+    title: document.querySelector('#edit-week-title').value,
+    startDate: document.querySelector('#edit-week-start-date').value,
+    description: document.querySelector('#edit-week-description').value,
+    links: links
+  };
+
+  // --- 1. Immediately update in-memory and DOM ---
+  weeks[weekIndex] = updatedWeek;
+  renderTable();
+  closeEditModal();
+
+  // --- 2. Then send API request in background ---
+  try {
+    const success = await updateWeekInAPI(updatedWeek);
+    if (!success) {
+      alert('Failed to save week changes to server.');
+      await loadAndInitialize();
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Error saving changes.');
+    await loadAndInitialize();
+  }
+}
+
+
+
+async function updateWeekInAPI(week) {
+  const response = await fetch(`api/index.php?resource=weeks`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: week.id,
+      title: week.title,
+      start_date: week.startDate,
+      description: week.description,
+      links: week.links
+    }),
+    credentials: "include"
+  });
+  const result = await response.json();
+  return result.success;
 }
 
 /**
@@ -90,9 +286,51 @@ function handleTableClick(event) {
  * 5. Add the 'click' event listener to `weeksTableBody` (calls `handleTableClick`).
  */
 async function loadAndInitialize() {
-  // ... your implementation here ...
+  try {
+    const response = await fetch(`api/index.php?resource=weeks`, {
+      credentials: "include"
+    });
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    const result = await response.json();
+
+    if (result.success) {
+      // Map backend fields to camelCase
+      weeks = result.data.map(w => ({
+        id: w.id,
+        title: w.title,
+        startDate: w.start_date, // map to camelCase
+        description: w.description,
+        links: w.links,
+        createdAt: w.created_at
+      }));
+      renderTable();
+    } else {
+      console.error('Error loading weeks:', result.error);
+      alert('Failed to load weeks: ' + (result.error || 'Unknown error'));
+    }
+    WeekForm.addEventListener('submit', handleAddWeek);
+    WeekTbody.addEventListener('click', handleTableClick);
+    editForm.addEventListener('submit', handleEditSubmit);
+    closeModalBtn.addEventListener('click', closeEditModal);
+    cancelEditBtn.addEventListener('click', closeEditModal);
+
+    editModal.addEventListener('click', (e) => {
+      if (e.target === editModal) {
+        closeEditModal();
+      }
+    });
+
+  } catch (error) {
+    console.log(error);
+    console.error('Error fetching weeks:', error);
+    alert('Error loading weeks. Check the console for details.');
+  }
 }
+
 
 // --- Initial Page Load ---
 // Call the main async function to start the application.
-loadAndInitialize();
+if (typeof window !== 'undefined' && checkLogin && !window.jasmine && !window.jest) {
+  checkLogin().then(ok => ok && loadAndInitialize());
+}
