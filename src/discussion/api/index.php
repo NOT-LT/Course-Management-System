@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Assume the Database class has a method getConnection() that returns a PDO instance
 require_once '../../config/database.php';
 
-// TODO: Get the PDO database connection
+// TODO: Get the PDO database connection.
 // $db = $database->getConnection();
 $database = new Database();
 $db = $database->getConnection();
