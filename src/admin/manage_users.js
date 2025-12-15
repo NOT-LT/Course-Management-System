@@ -118,7 +118,7 @@ function showAlert(message, title = "Error") {
     } else {
       icon.innerHTML = RED_X_ICON;
     }
-    
+
     iconWrap.appendChild(glow);
     iconWrap.appendChild(icon);
 
@@ -240,7 +240,6 @@ function showConfirm(message) {
     };
   });
 }
-
 
 // Edit Student Form Modal
 function showEditStudentForm(student) {
@@ -463,6 +462,15 @@ async function handleChangePassword(event) {
       document.getElementById("current-password").value = "";
       document.getElementById("new-password").value = "";
       document.getElementById("confirm-password").value = "";
+      document.getElementById("student-id-password").value = "";
+
+      // Close the modal
+      const changePasswordDetails = document.getElementById(
+        "change-password-details"
+      );
+      if (changePasswordDetails) {
+        changePasswordDetails.removeAttribute("open");
+      }
     } else {
       await showAlert(result.message || "Failed to update password", "error");
     }
