@@ -13,7 +13,9 @@
 
   3. Implement the TODOs below.
 */
-import { checkLogin } from "/src/common/helpers.js";
+Promise.resolve(true).then(ok => {
+  if (ok) loadAndInitialize();
+});
 
 // --- Global Data Store ---
 // This will hold the topics loaded from the JSON file.
