@@ -102,5 +102,5 @@ async function loadAndInitialize() {
   topicListContainer.addEventListener('click', handleTopicListClick);
 }
 
-// --- Initial Page Load ---
+// --- Initial Page Load ---.
 loadAndInitialize();

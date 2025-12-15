@@ -170,7 +170,7 @@ function getTopicById($db, $topicId) {
     $topics = $stmt->fetch(PDO::FETCH_ASSOC);
     // TODO: Check if topic exists
     // If topic found, return success response with topic data
-    // If not found, return error with 404 status
+    // If not found, return error with 404 status.
     if ($topics) {
         sendResponse(['success' => true, 'data' => $topics]);
     } else {
