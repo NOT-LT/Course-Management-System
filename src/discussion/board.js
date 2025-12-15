@@ -1,3 +1,4 @@
+
 /*
   File: board.js
   Requirement: Make the "Discussion Board" page interactive.
@@ -146,4 +147,5 @@ async function loadAndInitialize() {
 checkLogin().then(ok => {
   if (ok) loadAndInitialize();
 });
+
 
