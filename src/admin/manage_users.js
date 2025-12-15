@@ -72,6 +72,17 @@ const RED_X_ICON = `
 </svg>
 `;
 
+const GREEN_CHECK_ICON = `
+<svg width="120" height="120" viewBox="0 0 120 120">
+  <circle cx="60" cy="60" r="50" fill="#4ade80"/>
+  <path d="M35 65 L55 85 L85 45"
+        stroke="white"
+        stroke-width="12"
+        stroke-linecap="round"
+        fill="none"/>
+</svg>
+`;
+
 function showAlert(message, title = "Error") {
   return new Promise((resolve) => {
     /* ---------------- BACKDROP ---------------- */
@@ -102,8 +113,12 @@ function showAlert(message, title = "Error") {
     // Actual icon
     const icon = document.createElement("div");
     icon.className = "relative z-10";
-    icon.innerHTML = RED_X_ICON;
-
+    if (title.toLowerCase() === "success") {
+      icon.innerHTML = GREEN_CHECK_ICON;
+    } else {
+      icon.innerHTML = RED_X_ICON;
+    }
+    
     iconWrap.appendChild(glow);
     iconWrap.appendChild(icon);
 
