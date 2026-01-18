@@ -3,18 +3,16 @@
 # ITCS333 Course Project
 
 ## The names and student IDs of all team members.
-| No. | Name                     | Student ID  |  Task No. |
-|:----|:-------------------------|:------------|:----------|
-| 1   | Ali Mohammed Abbas        | 202309001  | 1
-| 2   | Taha Fadhel A. Jabbar     | 202308948  | 2
-| 3   | Hassan mirza omran        | 202308274  | 3
-| 4   | Zuhair Mohammed           | 202308683  | 4
-| 5   | Mohammed Ebrahim Habib    | 202309564  | 5
+| No. | Name                     
+|:----|:-------------------------
+| 1   | Ali Mohammed Abbas        
+| 2   | Taha Fadhel A. Jabbar     
+| 3   | Hassan mirza omran       
+| 4   | Zuhair Mohammed           
+| 5   | Mohammed Ebrahim Habib    
 
 ## A link to your live, hosted application on Replit.
 Replit Project: https://replit.com/@taljamri/ITCS333-Course-Project?v=1<br>
-Live Application: https://cc9d91a7-0a87-4051-b1e7-03ed1b11711d-00-2wjn6ucwnsj0v.sisko.replit.dev/
-
 
 ## Development Environment Setup
 
@@ -220,3 +218,4 @@ course-project-itcs333-sec04-group25/
 ├── package.json
 └── package-lock.json
 ```
+
